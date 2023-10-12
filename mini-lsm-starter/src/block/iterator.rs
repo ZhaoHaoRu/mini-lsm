@@ -64,13 +64,14 @@ impl BlockIterator {
     /// Returns true if the iterator is valid.
     /// Note: You may want to make use of `key`
     pub fn is_valid(&self) -> bool {
-        self.key.len() > 0
+        !self.key.is_empty()
     }
 
     fn read_elem(&self, offset: usize) -> Vec<u8> {
         let data_len = self.block.data.len();
         if data_len - offset >= 2 {
-            let elem_len = (((self.block.data[offset] as u16) << 8) | self.block.data[offset + 1] as u16) as usize;
+            let elem_len = (((self.block.data[offset] as u16) << 8)
+                | self.block.data[offset + 1] as u16) as usize;
             if data_len - 2 >= elem_len {
                 let elem_slice = &self.block.data[offset + 2..offset + 2 + elem_len];
                 let result = Vec::from(elem_slice);
@@ -92,7 +93,8 @@ impl BlockIterator {
 
         // read key
         if data_len - offset >= 2 {
-            let key_len   = (((self.block.data[offset] as u16) << 8) | self.block.data[offset + 1] as u16) as usize;
+            let key_len = (((self.block.data[offset] as u16) << 8)
+                | self.block.data[offset + 1] as u16) as usize;
             offset += 2;
             if data_len - offset >= key_len {
                 let key_slice = &self.block.data[offset..offset + key_len];
@@ -101,12 +103,14 @@ impl BlockIterator {
 
                 // read value
                 if data_len - offset >= 2 {
-                    let value_len = (((self.block.data[offset] as u16) << 8) | self.block.data[offset + 1] as u16) as usize;
+                    let value_len = (((self.block.data[offset] as u16) << 8)
+                        | self.block.data[offset + 1] as u16)
+                        as usize;
                     offset += 2;
                     if data_len - offset >= value_len {
-                        let value_slice = &self.block.data[offset..offset+value_len];
+                        let value_slice = &self.block.data[offset..offset + value_len];
                         self.value.extend_from_slice(value_slice);
-                        return
+                        return;
                     }
                 }
             }
@@ -131,9 +135,9 @@ impl BlockIterator {
     /// Seek to the first key that >= `key`.
     /// Note: You should assume the key-value pairs in the block are sorted when being added by callers.
     pub fn seek_to_key(&mut self, key: &[u8]) {
-        let mut left : usize  = 0;
-        let mut right : usize = self.block.offsets.len();
-        let mut result : usize = 0;
+        let mut left: usize = 0;
+        let mut right: usize = self.block.offsets.len();
+        let mut result: usize = 0;
 
         while left < right {
             let mid = left + (right - left) / 2;

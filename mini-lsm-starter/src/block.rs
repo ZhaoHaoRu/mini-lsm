@@ -44,22 +44,32 @@ impl Block {
     pub fn decode(data: &[u8]) -> Self {
         let size = data.len();
         if size < 2 {
-            return Self{data: Vec::new(), offsets: Vec::new()};
+            return Self {
+                data: Vec::new(),
+                offsets: Vec::new(),
+            };
         }
 
         // read the number of elements
         let mut cursor = Cursor::new(data);
-        cursor.seek(SeekFrom::Start((size - 2) as u64)).expect("[Block::decode] unable to seek to the expected position");
+        cursor
+            .seek(SeekFrom::Start((size - 2) as u64))
+            .expect("[Block::decode] unable to seek to the expected position");
         let num_of_elements = cursor.get_u16() as usize;
         if size < num_of_elements * 2 + 2 {
-            return Self{data: Vec::new(), offsets: Vec::new()};
+            return Self {
+                data: Vec::new(),
+                offsets: Vec::new(),
+            };
         }
 
         // read the offsets
         let mut begin_pos = size - num_of_elements * 2 - 2;
         let mut offsets: Vec<u16> = Vec::new();
         while begin_pos != size - 2 {
-            cursor.seek(SeekFrom::Start(begin_pos as u64)).expect("[Block::decode] unable to seek to the expected position when parse the offset");
+            cursor.seek(SeekFrom::Start(begin_pos as u64)).expect(
+                "[Block::decode] unable to seek to the expected position when parse the offset",
+            );
             let offset = cursor.get_u16();
             offsets.push(offset);
             begin_pos += 2;
@@ -71,11 +81,14 @@ impl Block {
 
         // check the range
         if begin_pos > end_pos {
-            return Self{data: Vec::new(), offsets: Vec::new()};
+            return Self {
+                data: Vec::new(),
+                offsets: Vec::new(),
+            };
         }
 
         let data = data[begin_pos..end_pos].to_vec();
-        Self {data, offsets}
+        Self { data, offsets }
     }
 }
 

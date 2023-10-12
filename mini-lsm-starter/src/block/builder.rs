@@ -1,8 +1,8 @@
 #![allow(unused_variables)] // TODO(you): remove this lint after implementing this mod
 #![allow(dead_code)] // TODO(you): remove this lint after implementing this mod
 
-use bytes::BufMut;
 use super::Block;
+use bytes::BufMut;
 
 /// Builds a block.
 pub struct BlockBuilder {
@@ -20,7 +20,7 @@ impl BlockBuilder {
         Self {
             block: Block {
                 data: Vec::new(),
-                offsets: Vec::new()
+                offsets: Vec::new(),
             },
             target_size,
             cur_size: 0,
@@ -31,7 +31,7 @@ impl BlockBuilder {
     /// Adds a key-value pair to the block. Returns false when the block is full.
     #[must_use]
     pub fn add(&mut self, key: &[u8], value: &[u8]) -> bool {
-        let needed : usize = 4 + key.len() + value.len();
+        let needed: usize = 4 + key.len() + value.len();
 
         if self.cur_size + needed + 2 >= self.target_size {
             return false;
@@ -62,11 +62,11 @@ impl BlockBuilder {
 
     /// Check if there is no key-value pair in the block.
     pub fn is_empty(&self) -> bool {
-        return self.cur_size == 0
+        self.cur_size == 0
     }
 
     /// Finalize the block.
     pub fn build(self) -> Block {
-        return self.block
+        self.block
     }
 }
