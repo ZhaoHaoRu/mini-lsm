@@ -1,6 +1,3 @@
-#![allow(unused_variables)] // TODO(you): remove this lint after implementing this mod
-#![allow(dead_code)] // TODO(you): remove this lint after implementing this mod
-
 use super::Block;
 use bytes::BufMut;
 
@@ -69,4 +66,6 @@ impl BlockBuilder {
     pub fn build(self) -> Block {
         self.block
     }
+
+    pub fn get_size(&self) -> usize { self.cur_size }
 }
