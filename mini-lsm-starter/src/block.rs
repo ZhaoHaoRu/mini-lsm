@@ -24,7 +24,19 @@ pub struct Block {
     offsets: Vec<u16>,
 }
 
+impl Default for Block {
+    fn default() -> Self {
+        Block::new()
+    }
+}
+
 impl Block {
+    pub fn new() -> Self {
+        Self {
+            data: vec![],
+            offsets: vec![],
+        }
+    }
     /// Encode the internal data to the data layout illustrated in the tutorial
     /// Note: You may want to recheck if any of the expected field is missing from your output
     pub fn encode(&self) -> Bytes {

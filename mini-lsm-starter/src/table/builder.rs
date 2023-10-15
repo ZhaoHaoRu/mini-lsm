@@ -5,9 +5,9 @@ use std::mem;
 use std::path::Path;
 use std::sync::Arc;
 
+use crate::block::{Block, BlockBuilder};
 use anyhow::Result;
 use bytes::{BufMut, Bytes};
-use crate::block::{Block, BlockBuilder};
 
 use super::{BlockMeta, SsTable};
 use crate::lsm_storage::BlockCache;
@@ -56,7 +56,8 @@ impl SsTableBuilder {
 
         if !self.block_builder.add(key, value) {
             // replace with a new block to process incoming kv
-            let prev_block_builder = mem::replace(&mut self.block_builder, BlockBuilder::new(self.block_size - 2));
+            let prev_block_builder =
+                mem::replace(&mut self.block_builder, BlockBuilder::new(self.block_size));
             // serialize the old block
             self.serialize_block(prev_block_builder);
             self.add(key, value);
@@ -84,25 +85,25 @@ impl SsTableBuilder {
         // data section
         data.reserve(self.data_block_offset);
         for block in &self.block_section {
-            data.extend_from_slice(&*block.encode());
+            data.extend_from_slice(&block.encode());
         }
         // if the last data block is not serialized, not forget to handle it
         if self.block_builder.get_size() > 0 {
-            data.extend_from_slice(&*self.block_builder.build().encode());
+            data.extend_from_slice(&self.block_builder.build().encode());
         }
 
         let meta_offset = data.len();
         // meta block
-        BlockMeta::encode_block_meta(&*self.meta, &mut data);
+        BlockMeta::encode_block_meta(&self.meta, &mut data);
         // the offset of meta block
-        let offset_slices : [u8; 8] = meta_offset.to_be_bytes();
+        let offset_slices: [u8; 8] = meta_offset.to_be_bytes();
         data.put_slice(&offset_slices);
 
         // generate the SsTable
         Ok(SsTable {
             file: FileObject(Bytes::copy_from_slice(&data[..])),
             block_metas: self.meta,
-            block_meta_offset: self.data_block_offset,
+            block_meta_offset: meta_offset,
         })
     }
 

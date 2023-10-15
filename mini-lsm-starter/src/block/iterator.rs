@@ -18,7 +18,7 @@ pub struct BlockIterator {
 }
 
 impl BlockIterator {
-    fn new(block: Arc<Block>) -> Self {
+    pub fn new(block: Arc<Block>) -> Self {
         Self {
             block,
             key: Vec::new(),

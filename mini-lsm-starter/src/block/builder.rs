@@ -67,5 +67,7 @@ impl BlockBuilder {
         self.block
     }
 
-    pub fn get_size(&self) -> usize { self.cur_size }
+    pub fn get_size(&self) -> usize {
+        self.cur_size + self.block.offsets.len() * 2
+    }
 }

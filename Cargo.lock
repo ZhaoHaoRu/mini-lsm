@@ -439,6 +439,7 @@ dependencies = [
  "bytes",
  "crossbeam-epoch",
  "crossbeam-skiplist",
+ "log",
  "moka",
  "ouroboros",
  "parking_lot",

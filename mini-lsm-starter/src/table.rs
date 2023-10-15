@@ -36,11 +36,11 @@ impl BlockMeta {
         buf: &mut Vec<u8>,
     ) {
         for elem in block_meta {
-            let offset_slice : [u8; 8] = (elem.offset).to_be_bytes();
+            let offset_slice: [u8; 8] = (elem.offset).to_be_bytes();
             buf.put_slice(&offset_slice);
-            let key_len_slice : [u8; 8] = (elem.first_key.len()).to_be_bytes();
+            let key_len_slice: [u8; 8] = (elem.first_key.len()).to_be_bytes();
             buf.put_slice(&key_len_slice);
-            buf.put_slice(&*elem.first_key);
+            buf.put_slice(&elem.first_key);
         }
     }
 
@@ -88,7 +88,15 @@ impl FileObject {
     }
 
     pub fn open(path: &Path) -> Result<Self> {
-        let mut file = File::open(path).expect(&format!("[FileObject::open] open file with path {} fail", path.to_str().unwrap()));
+        let mut file = File::open(path).unwrap_or_else(|_| {
+            panic!(
+                "{}",
+                &format!(
+                    "[FileObject::open] open file with path {} fail",
+                    path.to_str().unwrap()
+                )
+            )
+        });
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer)?;
         Ok(Self(Bytes::from(buffer)))
@@ -121,22 +129,28 @@ impl SsTable {
         let file_size = file.0.len();
         let file_ref = &file.0;
         let mut cursor = Cursor::new(file_ref);
-        cursor.seek(SeekFrom::Start((file_size - 8) as u64)).expect("[SsTable::open] the file is too small");
+        cursor
+            .seek(SeekFrom::Start((file_size - 8) as u64))
+            .expect("[SsTable::open] the file is too small");
         let meta_offset = cursor.get_u64();
 
         // get the block meta and decode
-        cursor.seek(SeekFrom::Start(meta_offset)).expect("[SsTable::open] fail to seek meta block, the file is too small");
+        cursor
+            .seek(SeekFrom::Start(meta_offset))
+            .expect("[SsTable::open] fail to seek meta block, the file is too small");
         // let block_meta_cursor = cursor.by_ref().take(file_size - 8 - meta_offset as usize);
-        let mut block_meta_buffer : Vec<u8> = Vec::new();
+        let mut block_meta_buffer: Vec<u8> = Vec::new();
         block_meta_buffer.resize(file_size - 8 - meta_offset as usize, 0);
-        cursor.read_exact(&mut *block_meta_buffer).expect("[SsTable::open] fail to read the block meta from the file");
+        cursor
+            .read_exact(&mut block_meta_buffer)
+            .expect("[SsTable::open] fail to read the block meta from the file");
         let block_metas = BlockMeta::decode_block_meta(Bytes::from(block_meta_buffer));
         // let block_metas = BlockMeta::decode_block_meta(block_meta_cursor);
 
         Ok(Self {
             file,
             block_metas,
-            block_meta_offset: 0,
+            block_meta_offset: meta_offset as usize,
         })
     }
 
@@ -145,12 +159,23 @@ impl SsTable {
         // check whether the block_idx is valid
         // TODO(zhr): index begin from 0 or 1 ?
         if block_idx >= self.block_metas.len() {
-            return Err(Error::msg("[SsTable::read_block] the block index is out of range"));
+            return Err(Error::msg(
+                "[SsTable::read_block] the block index is out of range",
+            ));
         }
 
         let block_offset = self.block_metas[block_idx].offset;
         let block_first_key = &self.block_metas[block_idx].first_key;
-        let block_raw_data = self.file.read(block_offset as u64, 4096).expect("[SsTable::read_block] unable to read block from SSTable file");
+
+        let mut block_size = (self.block_meta_offset - self.block_metas[block_idx].offset) as u64;
+        if block_idx < self.block_metas.len() - 1 {
+            block_size = (self.block_metas[block_idx + 1].offset
+                - self.block_metas[block_idx].offset) as u64;
+        }
+        let block_raw_data = self
+            .file
+            .read(block_offset as u64, block_size)
+            .expect("[SsTable::read_block] unable to read block from SSTable file");
         let block = Block::decode(&block_raw_data[..]);
         Ok(Arc::new(block))
     }
@@ -165,9 +190,9 @@ impl SsTable {
     /// You may also assume the key-value pairs stored in each consecutive block are sorted.
     pub fn find_block_idx(&self, key: &[u8]) -> usize {
         // find the
-        let mut left : usize = 0;
-        let mut right : usize = self.block_metas.len() - 1;
-        let mut result : usize = 0;
+        let mut left: usize = 0;
+        let mut right: usize = self.block_metas.len() - 1;
+        let mut result: usize = 0;
         while left < right {
             let mid = left + (right - left) / 2;
             if self.block_metas[mid].first_key >= key {
