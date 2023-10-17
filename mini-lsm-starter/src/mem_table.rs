@@ -43,10 +43,9 @@ impl MemTable {
 
     /// Get a value by key.
     pub fn get(&self, key: &[u8]) -> Option<Bytes> {
-        match self.map.get(key) {
-            None => Option::None,
-            Some(pair) => Some(Bytes::copy_from_slice(pair.value())),
-        }
+        self.map
+            .get(key)
+            .map(|pair| Bytes::copy_from_slice(pair.value()))
     }
 
     /// Put a key-value pair into the mem-table.

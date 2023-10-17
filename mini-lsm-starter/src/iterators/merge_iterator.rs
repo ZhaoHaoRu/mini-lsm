@@ -50,15 +50,15 @@ impl<I: StorageIterator> MergeIterator<I> {
             }
         }
         if let Some(current) = heap.pop() {
-            return Self {
+            Self {
                 iters: heap,
                 current: Some(current),
-            };
+            }
         } else {
-            return Self {
+            Self {
                 iters: BinaryHeap::new(),
                 current: None,
-            };
+            }
         }
     }
 }
@@ -73,11 +73,11 @@ impl<I: StorageIterator> StorageIterator for MergeIterator<I> {
     }
 
     fn is_valid(&self) -> bool {
-        self.current != None && self.current.as_ref().unwrap().1.is_valid()
+        self.current.is_some() && self.current.as_ref().unwrap().1.is_valid()
     }
 
     fn next(&mut self) -> Result<()> {
-        if self.current == None {
+        if self.current.is_none() {
             return Ok(());
         }
         let current = self.current.as_mut().unwrap();
@@ -110,11 +110,9 @@ impl<I: StorageIterator> StorageIterator for MergeIterator<I> {
             } else {
                 return Ok(());
             }
-        } else {
-            if let Some(mut candidate) = self.iters.peek_mut() {
-                if Ord::cmp(current, &candidate) == Ordering::Less {
-                    std::mem::swap(current, &mut *candidate);
-                }
+        } else if let Some(mut candidate) = self.iters.peek_mut() {
+            if Ord::cmp(current, &candidate) == Ordering::Less {
+                std::mem::swap(current, &mut *candidate);
             }
         }
 

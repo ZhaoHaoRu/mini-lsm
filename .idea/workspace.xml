@@ -7,17 +7,17 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="finish day2 part1">
+    <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="finish day3 part1-3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/block.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/block/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block/builder.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/tests.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/merge_iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/merge_iterator.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/tests.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/tests/merge_iterator_test.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/tests/merge_iterator_test.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/tests/two_merge_iterator_test.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/tests/two_merge_iterator_test.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/two_merge_iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/iterators/two_merge_iterator.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/mem_table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/mem_table.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/mem_table/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/mem_table/tests.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,19 +43,34 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_1.executor": "Run",
+    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_2.executor": "Run",
+    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_empty.executor": "Run",
+    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1.executor": "Run",
+    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2.executor": "Run",
+    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor": "Run",
+    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor": "Run",
+    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor": "Run",
+    "Cargo.Test two_merge_iterator_test.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "WebServerToolWindowFactoryState": "false",
     "git-widget-placeholder": "develop",
     "last_opened_file_path": "/Users/zhaohaoru/rust_project/mini-lsm",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
     "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
     "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs": "true",
     "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs": "true",
-    "settings.editor.selected.configurable": "preferences.toDoOptions"
+    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs": "true",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunManager" selected="Cargo.Test table::tests::test_sst_seek_key">
+  <component name="RunManager" selected="Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
       <option name="command" value="run" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -73,8 +88,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test table::tests::test_sst_build_all" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_build_all -- --exact" />
+    <configuration name="Test iterators::tests::two_merge_iterator_test::test_merge_1" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib iterators::tests::two_merge_iterator_test::test_merge_1 -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -90,8 +105,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test table::tests::test_sst_build_two_blocks" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_build_two_blocks -- --exact" />
+    <configuration name="Test iterators::tests::two_merge_iterator_test::test_merge_2" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib iterators::tests::two_merge_iterator_test::test_merge_2 -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -107,8 +122,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test table::tests::test_sst_decode" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_decode -- --exact" />
+    <configuration name="Test iterators::tests::two_merge_iterator_test::test_merge_3" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib iterators::tests::two_merge_iterator_test::test_merge_3 -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -124,8 +139,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test table::tests::test_sst_iterator" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_iterator -- --exact" />
+    <configuration name="Test iterators::tests::two_merge_iterator_test::test_merge_4" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib iterators::tests::two_merge_iterator_test::test_merge_4 -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -141,8 +156,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test table::tests::test_sst_seek_key" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_seek_key -- --exact" />
+    <configuration name="Test iterators::tests::two_merge_iterator_test::test_merge_5" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib iterators::tests::two_merge_iterator_test::test_merge_5 -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -160,11 +175,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Cargo.Test table::tests::test_sst_seek_key" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_iterator" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_decode" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_build_all" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_build_two_blocks" />
+        <item itemvalue="Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5" />
+        <item itemvalue="Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4" />
+        <item itemvalue="Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3" />
+        <item itemvalue="Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1" />
+        <item itemvalue="Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2" />
       </list>
     </recent_temporary>
   </component>
@@ -180,7 +195,12 @@
       <option name="presentableId" value="Default" />
       <updated>1695603489184</updated>
       <workItem from="1695603490343" duration="18142000" />
-      <workItem from="1697006648642" duration="73710000" />
+      <workItem from="1697006648642" duration="82546000" />
+      <workItem from="1697357549025" duration="20902000" />
+      <workItem from="1697470648419" duration="2959000" />
+      <workItem from="1697505505219" duration="8000" />
+      <workItem from="1697505603526" duration="346000" />
+      <workItem from="1697505967111" duration="10838000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
@@ -190,7 +210,15 @@
       <option name="project" value="LOCAL" />
       <updated>1697267470617</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="finish day3 part1-3">
+      <option name="closed" value="true" />
+      <created>1697521904020</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1697521904020</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -209,7 +237,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="finish day2 part1" />
-    <option name="LAST_COMMIT_MESSAGE" value="finish day2 part1" />
+    <MESSAGE value="finish day3 part1-3" />
+    <option name="LAST_COMMIT_MESSAGE" value="finish day3 part1-3" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -231,7 +260,7 @@
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table.rs</url>
-          <line>155</line>
+          <line>159</line>
           <option name="timeStamp" value="41" />
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -251,7 +280,7 @@
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table.rs</url>
-          <line>123</line>
+          <line>128</line>
           <option name="timeStamp" value="55" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
