@@ -1,13 +1,12 @@
-#![allow(unused_variables)] // TODO(you): remove this lint after implementing this mod
-#![allow(dead_code)] // TODO(you): remove this lint after implementing this mod
-
-use std::cmp::{self};
+use std::cmp::{self, Ordering};
+use std::collections::binary_heap::PeekMut;
 use std::collections::BinaryHeap;
 
 use anyhow::Result;
 
 use super::StorageIterator;
 
+#[derive(Clone)]
 struct HeapWrapper<I: StorageIterator>(pub usize, pub Box<I>);
 
 impl<I: StorageIterator> PartialEq for HeapWrapper<I> {
@@ -39,29 +38,86 @@ impl<I: StorageIterator> Ord for HeapWrapper<I> {
 /// iterators, perfer the one with smaller index.
 pub struct MergeIterator<I: StorageIterator> {
     iters: BinaryHeap<HeapWrapper<I>>,
-    current: HeapWrapper<I>,
+    current: Option<HeapWrapper<I>>,
 }
 
 impl<I: StorageIterator> MergeIterator<I> {
     pub fn create(iters: Vec<Box<I>>) -> Self {
-        unimplemented!()
+        let mut heap = BinaryHeap::new();
+        for (index, elem) in iters.into_iter().enumerate() {
+            if elem.is_valid() {
+                heap.push(HeapWrapper(index, elem));
+            }
+        }
+        if let Some(current) = heap.pop() {
+            return Self {
+                iters: heap,
+                current: Some(current),
+            };
+        } else {
+            return Self {
+                iters: BinaryHeap::new(),
+                current: None,
+            };
+        }
     }
 }
 
 impl<I: StorageIterator> StorageIterator for MergeIterator<I> {
     fn key(&self) -> &[u8] {
-        unimplemented!()
+        self.current.as_ref().unwrap().1.key()
     }
 
     fn value(&self) -> &[u8] {
-        unimplemented!()
+        self.current.as_ref().unwrap().1.value()
     }
 
     fn is_valid(&self) -> bool {
-        unimplemented!()
+        self.current != None && self.current.as_ref().unwrap().1.is_valid()
     }
 
     fn next(&mut self) -> Result<()> {
-        unimplemented!()
+        if self.current == None {
+            return Ok(());
+        }
+        let current = self.current.as_mut().unwrap();
+        while let Some(mut candidate) = self.iters.peek_mut() {
+            if candidate.1.key() == current.1.key() {
+                match candidate.1.next() {
+                    Ok(_) => {}
+                    Err(e) => {
+                        PeekMut::pop(candidate);
+                        return Err(e);
+                    }
+                }
+                // the iter is no longer valid, just pop it
+                if !candidate.1.is_valid() {
+                    PeekMut::pop(candidate);
+                }
+            } else {
+                break;
+            }
+        }
+
+        current
+            .1
+            .next()
+            .expect("[MergeIterator::next] unable to call current iterator `next` method");
+        // if the current element is invalid, replace with the top element in the heap
+        if !current.1.is_valid() {
+            if let Some(current) = self.iters.pop() {
+                self.current = Some(current);
+            } else {
+                return Ok(());
+            }
+        } else {
+            if let Some(mut candidate) = self.iters.peek_mut() {
+                if Ord::cmp(current, &candidate) == Ordering::Less {
+                    std::mem::swap(current, &mut *candidate);
+                }
+            }
+        }
+
+        Ok(())
     }
 }

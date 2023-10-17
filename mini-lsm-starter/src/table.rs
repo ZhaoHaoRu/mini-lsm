@@ -157,7 +157,6 @@ impl SsTable {
     /// Read a block from the disk.
     pub fn read_block(&self, block_idx: usize) -> Result<Arc<Block>> {
         // check whether the block_idx is valid
-        // TODO(zhr): index begin from 0 or 1 ?
         if block_idx >= self.block_metas.len() {
             return Err(Error::msg(
                 "[SsTable::read_block] the block index is out of range",
