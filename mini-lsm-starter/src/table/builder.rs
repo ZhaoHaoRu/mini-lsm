@@ -104,6 +104,8 @@ impl SsTableBuilder {
             file: FileObject(Bytes::copy_from_slice(&data[..])),
             block_metas: self.meta,
             block_meta_offset: meta_offset,
+            block_cache,
+            sst_id: id,
         })
     }
 

@@ -13,6 +13,7 @@ use std::sync::Arc;
 use anyhow::Result;
 pub use builder::SsTableBuilder;
 use bytes::{Buf, BufMut, Bytes};
+use log::{Level, log};
 pub use iterator::SsTableIterator;
 
 use crate::block::Block;
@@ -115,6 +116,10 @@ pub struct SsTable {
     block_metas: Vec<BlockMeta>,
     /// The offset that indicates the start point of meta blocks in `file`.
     block_meta_offset: usize,
+    /// The block cache
+    block_cache: Option<Arc<BlockCache>>,
+    /// The sst id
+    sst_id: usize,
 }
 
 impl SsTable {
@@ -151,6 +156,8 @@ impl SsTable {
             file,
             block_metas,
             block_meta_offset: meta_offset as usize,
+            block_cache,
+            sst_id: id,
         })
     }
 
@@ -181,7 +188,15 @@ impl SsTable {
 
     /// Read a block from disk, with block cache. (Day 4)
     pub fn read_block_cached(&self, block_idx: usize) -> Result<Arc<Block>> {
-        unimplemented!()
+        if let Some(cache) = self.block_cache.as_ref() {
+            let wanna_block = cache.try_get_with((self.sst_id, block_idx), ||{self.read_block(block_idx)});
+            if wanna_block.is_ok() {
+                return Ok(wanna_block.unwrap());
+            }
+        }
+
+        log!(Level::Info, "[SsTable::read_block_cached] the block cache is disabled or populate the cache fail");
+        self.read_block(block_idx)
     }
 
     /// Find the block that may contain `key`.
