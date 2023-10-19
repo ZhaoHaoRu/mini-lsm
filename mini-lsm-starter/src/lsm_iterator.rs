@@ -46,9 +46,7 @@ impl LsmIterator {
                 self.deleted_elements
                     .insert(Bytes::copy_from_slice(self.key()));
             }
-            if let Err(error) = self.next() {
-                return Err(error);
-            }
+            self.next()?;
         }
         Ok(())
     }

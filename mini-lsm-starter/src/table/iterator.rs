@@ -46,7 +46,7 @@ impl SsTableIterator {
         // find the wanted data block
         let source_block = self
             .table
-            .read_block(self.idx)
+            .read_block_cached(self.idx)
             .expect("[SsTableIterator::seek_to_first] read block fail");
         self.block_iterator = BlockIterator::create_and_seek_to_first(source_block);
         Ok(())
@@ -96,7 +96,7 @@ impl SsTableIterator {
 
         let candidate_block = self
             .table
-            .read_block(block_index)
+            .read_block_cached(block_index)
             .expect("[SsTableIterator::seek_to_key] read block fail");
         self.block_iterator = BlockIterator::create_and_seek_to_key(candidate_block, key);
         // make sure there is actually some key bigger than the target key
@@ -112,7 +112,7 @@ impl SsTableIterator {
         }
         let candidate_block = self
             .table
-            .read_block(block_index + 1)
+            .read_block_cached(block_index + 1)
             .expect("[SsTableIterator::seek_to_key] read block fail");
         self.block_iterator = BlockIterator::create_and_seek_to_first(candidate_block);
         if self.block_iterator.is_valid() {
@@ -157,7 +157,7 @@ impl StorageIterator for SsTableIterator {
             }
             let candidate_block = self
                 .table
-                .read_block(self.idx)
+                .read_block_cached(self.idx)
                 .expect("[SsTableIterator::next] read block fail");
             self.block_iterator = BlockIterator::create_and_seek_to_first(candidate_block);
         }

@@ -191,8 +191,8 @@ impl SsTable {
         if let Some(cache) = self.block_cache.as_ref() {
             let wanna_block =
                 cache.try_get_with((self.sst_id, block_idx), || self.read_block(block_idx));
-            if wanna_block.is_ok() {
-                return Ok(wanna_block.unwrap());
+            if let Ok(block) = wanna_block {
+                return Ok(block);
             }
         }
 

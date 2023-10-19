@@ -9,9 +9,8 @@
   <component name="ChangeListManager">
     <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="finish day3 part1-3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_iterator.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,7 +69,7 @@
     "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs": "true",
     "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs": "true",
     "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs": "true",
-    "settings.editor.selected.configurable": "preferences.toDoOptions",
+    "settings.editor.selected.configurable": "preferences.pluginManager",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -204,7 +203,7 @@
       <workItem from="1697470648419" duration="2959000" />
       <workItem from="1697505505219" duration="8000" />
       <workItem from="1697505603526" duration="346000" />
-      <workItem from="1697505967111" duration="44073000" />
+      <workItem from="1697505967111" duration="46007000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
@@ -283,11 +282,6 @@
           <option name="timeStamp" value="68" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
-          <line>76</line>
-          <option name="timeStamp" value="69" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs</url>
           <line>137</line>
           <option name="timeStamp" value="71" />
@@ -296,11 +290,6 @@
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs</url>
           <line>153</line>
           <option name="timeStamp" value="72" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs</url>
-          <line>74</line>
-          <option name="timeStamp" value="98" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
