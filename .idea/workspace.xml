@@ -8,9 +8,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="finish day3 part1-3">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -203,7 +201,7 @@
       <workItem from="1697470648419" duration="2959000" />
       <workItem from="1697505505219" duration="8000" />
       <workItem from="1697505603526" duration="346000" />
-      <workItem from="1697505967111" duration="46007000" />
+      <workItem from="1697505967111" duration="46801000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
