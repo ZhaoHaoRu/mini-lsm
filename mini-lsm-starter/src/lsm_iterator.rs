@@ -1,40 +1,50 @@
 #![allow(unused_variables)] // TODO(you): remove this lint after implementing this mod
 #![allow(dead_code)] // TODO(you): remove this lint after implementing this mod
 
-use std::collections::{HashSet};
+use crate::iterators::merge_iterator::MergeIterator;
 use anyhow::Result;
 use bytes::Bytes;
 use log::warn;
-use crate::iterators::merge_iterator::MergeIterator;
+use std::collections::HashSet;
 
-use crate::iterators::StorageIterator;
 use crate::iterators::two_merge_iterator::TwoMergeIterator;
+use crate::iterators::StorageIterator;
 use crate::mem_table::MemTableIterator;
 use crate::table::SsTableIterator;
 
 pub struct LsmIterator {
-    inner_iterator: TwoMergeIterator<MergeIterator<MemTableIterator>, MergeIterator<SsTableIterator>>,
-    deleted_elements: HashSet<Bytes>
+    inner_iterator:
+        TwoMergeIterator<MergeIterator<MemTableIterator>, MergeIterator<SsTableIterator>>,
+    deleted_elements: HashSet<Bytes>,
 }
 
 impl LsmIterator {
-    pub fn new(iter: TwoMergeIterator<MergeIterator<MemTableIterator>, MergeIterator<SsTableIterator>>) -> Self {
+    pub fn new(
+        iter: TwoMergeIterator<MergeIterator<MemTableIterator>, MergeIterator<SsTableIterator>>,
+    ) -> Self {
         let mut lsm_iterator = Self {
             inner_iterator: iter,
-            deleted_elements: HashSet::new()
+            deleted_elements: HashSet::new(),
         };
-        lsm_iterator.skip_deleted().expect("[LsmIterator::new] skip deleted fail when initializing");
+        lsm_iterator
+            .skip_deleted()
+            .expect("[LsmIterator::new] skip deleted fail when initializing");
         lsm_iterator
     }
 
     /// skip the deleted entries indicated by the empty entry
     fn skip_deleted(&mut self) -> Result<()> {
-        if !self.is_valid() || (!self.deleted_elements.contains(self.key()) && !self.value().is_empty()) {
+        if !self.is_valid()
+            || (!self.deleted_elements.contains(self.key()) && !self.value().is_empty())
+        {
             return Ok(());
         }
-        while self.is_valid() && (self.deleted_elements.contains(self.key()) || self.value().is_empty()) {
+        while self.is_valid()
+            && (self.deleted_elements.contains(self.key()) || self.value().is_empty())
+        {
             if self.value().is_empty() {
-                self.deleted_elements.insert(Bytes::copy_from_slice(self.key()));
+                self.deleted_elements
+                    .insert(Bytes::copy_from_slice(self.key()));
             }
             if let Err(error) = self.next() {
                 return Err(error);
@@ -43,7 +53,6 @@ impl LsmIterator {
         Ok(())
     }
 }
-
 
 impl StorageIterator for LsmIterator {
     fn is_valid(&self) -> bool {
@@ -59,7 +68,9 @@ impl StorageIterator for LsmIterator {
     }
 
     fn next(&mut self) -> Result<()> {
-        self.inner_iterator.next().expect("[LsmIterator::next] unable to call current iterator `next` method");
+        self.inner_iterator
+            .next()
+            .expect("[LsmIterator::next] unable to call current iterator `next` method");
         self.skip_deleted()
     }
 }
@@ -92,9 +103,7 @@ impl<I: StorageIterator> StorageIterator for FusedIterator<I> {
 
     fn next(&mut self) -> Result<()> {
         match self.iter.next() {
-            Ok(result) => {
-                Ok(result)
-            }
+            Ok(result) => Ok(result),
             Err(_) => {
                 warn!("[FusedIterator::next] no available next element");
                 Ok(())

@@ -1,20 +1,19 @@
 #![allow(unused_variables)] // TODO(you): remove this lint after implementing this mod
 #![allow(dead_code)] // TODO(you): remove this lint after implementing this mod
 
-use std::ops::{Bound};
-use std::path::Path;
+use std::ops::Bound;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
 use anyhow::{Error, Result};
 use bytes::Bytes;
 use moka::sync::Cache;
 use parking_lot::RwLock;
-use tempfile::tempdir;
 
 use crate::block::Block;
 use crate::iterators::merge_iterator::MergeIterator;
-use crate::iterators::StorageIterator;
 use crate::iterators::two_merge_iterator::TwoMergeIterator;
+use crate::iterators::StorageIterator;
 use crate::lsm_iterator::{FusedIterator, LsmIterator};
 use crate::mem_table::MemTable;
 use crate::table::{SsTable, SsTableBuilder, SsTableIterator};
@@ -56,10 +55,11 @@ impl LsmStorageInner {
 pub struct LsmStorage {
     inner: Arc<RwLock<Arc<LsmStorageInner>>>,
     mutex: Mutex<i32>,
+    path: PathBuf,
 }
 
 fn generate_sst_name(sst_id: usize) -> String {
-     sst_id.to_string() + ".sst"
+    sst_id.to_string() + ".sst"
 }
 
 impl LsmStorage {
@@ -67,12 +67,13 @@ impl LsmStorage {
         Ok(Self {
             inner: Arc::new(RwLock::new(Arc::new(LsmStorageInner::create()))),
             mutex: Mutex::new(0),
+            path: path.as_ref().to_path_buf(),
         })
     }
 
     /// Get a key from the storage. In day 7, this can be further optimized by using a bloom filter.
     pub fn get(&self, key: &[u8]) -> Result<Option<Bytes>> {
-        let mut memtable_copy : Arc::<MemTable> = Arc::new(MemTable::create());
+        let mut memtable_copy: Arc<MemTable> = Arc::new(MemTable::create());
         let mut imm_memtables_copy = vec![];
         let mut l0_sstables_copy = vec![];
         let mut levels_copy = vec![];
@@ -96,12 +97,18 @@ impl LsmStorage {
 
         // step1: search the mem-table
         if let Some(mem_table_result) = memtable_copy.get(key) {
+            if mem_table_result.is_empty() {
+                return Ok(None);
+            }
             return Ok(Some(mem_table_result));
         }
 
         // step2: search the immutable mem-tables from the latest to the earliest
         for imm_mem_table in imm_memtables_copy {
             if let Some(imm_mem_table_result) = imm_mem_table.get(key) {
+                if imm_mem_table_result.is_empty() {
+                    return Ok(None);
+                }
                 return Ok(Some(imm_mem_table_result));
             }
         }
@@ -109,18 +116,19 @@ impl LsmStorage {
         let search_in_sst = |table: Arc<SsTable>| -> Result<Option<Bytes>> {
             if let Ok(ss_table_iter) = SsTableIterator::create_and_seek_to_key(table, key) {
                 if ss_table_iter.is_valid() && ss_table_iter.key() == key {
-                    return Ok(Some(Bytes::copy_from_slice(ss_table_iter.value())))
+                    if ss_table_iter.value().is_empty() {
+                        return Ok(None);
+                    }
+                    return Ok(Some(Bytes::copy_from_slice(ss_table_iter.value())));
                 }
             }
-            Ok(None)
+            Err(Error::msg("[search_in_sst] nothing found"))
         };
 
         // step3: search the level0 file from the latest to the earliest
         for ss_table in l0_sstables_copy {
             if let Ok(result) = search_in_sst(ss_table) {
-                if result.is_some() {
-                    return Ok(result)
-                }
+                return Ok(result);
             }
         }
 
@@ -128,9 +136,7 @@ impl LsmStorage {
         for level in levels_copy {
             for ss_table in level {
                 if let Ok(result) = search_in_sst(ss_table) {
-                    if result.is_some() {
-                        return Ok(result)
-                    }
+                    return Ok(result);
                 }
             }
         }
@@ -159,10 +165,14 @@ impl LsmStorage {
     /// In day 3: flush the current memtable to disk as L0 SST.
     /// In day 6: call `fsync` on WAL.
     pub fn sync(&self) -> Result<()> {
-        let _unused = self.mutex.lock().expect("[LsmStorage::sync] encounter an error when acquire lock");
+        let _unused = self
+            .mutex
+            .lock()
+            .expect("[LsmStorage::sync] encounter an error when acquire lock");
 
         // Firstly, move the current mutable mem-table to immutable mem-table list
         {
+            // NOTE: the operation on write guard is copy-on-write
             let mut w = self.inner.write();
             let mut object = w.as_ref().clone();
             let replaced_mem_table = object.memtable.clone();
@@ -172,14 +182,14 @@ impl LsmStorage {
         }
 
         // Secondly, flush the immutable mem-tables to ss-tables without taking any lock
-        // XXX(zhr): must take the read lock because of the RWLock wrapper?
         let mut ss_table_builders = vec![];
         {
             let r = self.inner.read();
             for mem_table in &r.imm_memtables {
-                // TODO(zhr): the block size may need more information?
                 let mut ss_table_builder = SsTableBuilder::new(4096);
-                mem_table.flush(&mut ss_table_builder).expect("[LsmStorage::sync] flush mem-table fail");
+                mem_table
+                    .flush(&mut ss_table_builder)
+                    .expect("[LsmStorage::sync] flush mem-table fail");
                 ss_table_builders.push(ss_table_builder);
             }
         }
@@ -188,9 +198,14 @@ impl LsmStorage {
         {
             let mut w = self.inner.write();
             let mut object = w.as_ref().clone();
-            let dir = tempdir().unwrap();
             for (_, ss_table_builder) in ss_table_builders.into_iter().enumerate() {
-                ss_table_builder.build(object.next_sst_id, None, dir.path().join(generate_sst_name(object.next_sst_id))).unwrap();
+                ss_table_builder
+                    .build(
+                        object.next_sst_id,
+                        Some(object.block_cache.clone()),
+                        self.path.join(generate_sst_name(object.next_sst_id)),
+                    )
+                    .unwrap();
                 object.next_sst_id += 1;
             }
             *w = Arc::new(object);
@@ -205,7 +220,7 @@ impl LsmStorage {
         _lower: Bound<&[u8]>,
         _upper: Bound<&[u8]>,
     ) -> Result<FusedIterator<LsmIterator>> {
-        let mut memtable_copy : Arc::<MemTable> = Arc::new(MemTable::create());
+        let mut memtable_copy: Arc<MemTable> = Arc::new(MemTable::create());
         let mut imm_memtables_copy = vec![];
         let mut l0_sstables_copy = vec![];
         let mut levels_copy = vec![];
@@ -235,7 +250,7 @@ impl LsmStorage {
         }
 
         // generate the boundary key for SsTable
-        let mut boundary= vec![];
+        let mut boundary = vec![];
         match _lower {
             Bound::Excluded(value) => {
                 boundary = Vec::from(value);
@@ -247,21 +262,30 @@ impl LsmStorage {
             Bound::Included(value) => {
                 boundary = Vec::from(value);
             }
-            Bound::Unbounded => {
-                return Err(Error::msg("[LsmStorage::scan] invalid lower bound"));
-            }
+            Bound::Unbounded => {}
         }
 
         let mut ss_table_iterators = vec![];
         for ss_table in l0_sstables_copy {
-            ss_table_iterators.push(Box::new(SsTableIterator::create_and_seek_to_key(ss_table, &boundary[..])?));
+            ss_table_iterators.push(Box::new(SsTableIterator::create_and_seek_to_key(
+                ss_table,
+                &boundary[..],
+            )?));
         }
         for level in levels_copy.clone().into_iter() {
             for ss_table in level {
-                ss_table_iterators.push(Box::new(SsTableIterator::create_and_seek_to_key(ss_table, &boundary)?));
+                ss_table_iterators.push(Box::new(SsTableIterator::create_and_seek_to_key(
+                    ss_table, &boundary,
+                )?));
             }
         }
 
-        Ok(FusedIterator::new(LsmIterator::new(TwoMergeIterator::create(MergeIterator::create(mem_table_iterators), MergeIterator::create(ss_table_iterators)).unwrap())))
+        Ok(FusedIterator::new(LsmIterator::new(
+            TwoMergeIterator::create(
+                MergeIterator::create(mem_table_iterators),
+                MergeIterator::create(ss_table_iterators),
+            )
+            .unwrap(),
+        )))
     }
 }

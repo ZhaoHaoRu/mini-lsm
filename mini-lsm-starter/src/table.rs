@@ -13,8 +13,8 @@ use std::sync::Arc;
 use anyhow::Result;
 pub use builder::SsTableBuilder;
 use bytes::{Buf, BufMut, Bytes};
-use log::{Level, log};
 pub use iterator::SsTableIterator;
+use log::{log, Level};
 
 use crate::block::Block;
 use crate::lsm_storage::BlockCache;
@@ -189,13 +189,17 @@ impl SsTable {
     /// Read a block from disk, with block cache. (Day 4)
     pub fn read_block_cached(&self, block_idx: usize) -> Result<Arc<Block>> {
         if let Some(cache) = self.block_cache.as_ref() {
-            let wanna_block = cache.try_get_with((self.sst_id, block_idx), ||{self.read_block(block_idx)});
+            let wanna_block =
+                cache.try_get_with((self.sst_id, block_idx), || self.read_block(block_idx));
             if wanna_block.is_ok() {
                 return Ok(wanna_block.unwrap());
             }
         }
 
-        log!(Level::Info, "[SsTable::read_block_cached] the block cache is disabled or populate the cache fail");
+        log!(
+            Level::Info,
+            "[SsTable::read_block_cached] the block cache is disabled or populate the cache fail"
+        );
         self.read_block(block_idx)
     }
 
