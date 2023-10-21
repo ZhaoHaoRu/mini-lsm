@@ -119,7 +119,6 @@ fn sync() -> Result<()> {
         "--manifest-path",
         cargo_toml,
         "--baseline-root",
-        "mini-lsm/Cargo.toml",
     )
     .run()?;
     Ok(())

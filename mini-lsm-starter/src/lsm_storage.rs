@@ -17,6 +17,7 @@ use crate::iterators::StorageIterator;
 use crate::lsm_iterator::{FusedIterator, LsmIterator};
 use crate::mem_table::MemTable;
 use crate::table::{SsTable, SsTableBuilder, SsTableIterator};
+use crate::utils;
 
 pub type BlockCache = Cache<(usize, usize), Arc<Block>>;
 
@@ -32,7 +33,7 @@ pub struct LsmStorageInner {
     #[allow(dead_code)]
     levels: Vec<Vec<Arc<SsTable>>>,
     /// The next SSTable ID.
-    next_sst_id: usize,
+    next_sst_id: Arc<usize>,
     /// The block cache
     block_cache: Arc<BlockCache>,
 }
@@ -44,7 +45,7 @@ impl LsmStorageInner {
             imm_memtables: vec![],
             l0_sstables: vec![],
             levels: vec![],
-            next_sst_id: 1,
+            next_sst_id: Arc::new(1),
             //NOTE: the default cache size is 4GB
             block_cache: Arc::new(Cache::new(4 * 1024 * 1024 * 1024)),
         }
@@ -58,9 +59,7 @@ pub struct LsmStorage {
     path: PathBuf,
 }
 
-fn generate_sst_name(sst_id: usize) -> String {
-    sst_id.to_string() + ".sst"
-}
+
 
 impl LsmStorage {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
@@ -185,12 +184,12 @@ impl LsmStorage {
             for (_, ss_table_builder) in ss_table_builders.into_iter().enumerate() {
                 ss_table_builder
                     .build(
-                        object.next_sst_id,
+                        *object.next_sst_id,
                         Some(object.block_cache.clone()),
-                        self.path.join(generate_sst_name(object.next_sst_id)),
+                        utils::generate_sst_name(Some(&self.path), *object.next_sst_id),
                     )
                     .unwrap();
-                object.next_sst_id += 1;
+                *object.next_sst_id += 1;
             }
             *w = Arc::new(object);
         }

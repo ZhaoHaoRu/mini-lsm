@@ -227,6 +227,17 @@ impl SsTable {
     pub fn num_of_blocks(&self) -> usize {
         self.block_metas.len()
     }
+
+    pub fn min_key(&self) -> Vec<u8> {
+        if self.block_metas.len() > 0 {
+            return Vec::from(self.block_metas[0].first_key.clone());
+        }
+        vec![]
+    }
+
+    pub fn get_sst_id(&self) -> usize {
+        self.sst_id
+    }
 }
 
 #[cfg(test)]

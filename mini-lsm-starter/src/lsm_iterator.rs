@@ -16,6 +16,7 @@ pub struct LsmIterator {
     inner_iterator:
         TwoMergeIterator<MergeIterator<MemTableIterator>, MergeIterator<SsTableIterator>>,
     deleted_elements: HashSet<Bytes>,
+    duplicated_elements: HashSet<Bytes>,
 }
 
 impl LsmIterator {
@@ -25,28 +26,32 @@ impl LsmIterator {
         let mut lsm_iterator = Self {
             inner_iterator: iter,
             deleted_elements: HashSet::new(),
+            duplicated_elements: HashSet::new(),
         };
         lsm_iterator
-            .skip_deleted()
+            .skip_deleted_duplicated()
             .expect("[LsmIterator::new] skip deleted fail when initializing");
         lsm_iterator
     }
 
-    /// skip the deleted entries indicated by the empty entry
-    fn skip_deleted(&mut self) -> Result<()> {
+    /// skip the deleted and duplicated entries indicated by the empty entry
+    fn skip_deleted_duplicated(&mut self) -> Result<()> {
         if !self.is_valid()
             || (!self.deleted_elements.contains(self.key()) && !self.value().is_empty())
         {
             return Ok(());
         }
         while self.is_valid()
-            && (self.deleted_elements.contains(self.key()) || self.value().is_empty())
+            && (self.deleted_elements.contains(self.key()) || self.value().is_empty() || self.duplicated_elements.contains(self.key()))
         {
             if self.value().is_empty() {
                 self.deleted_elements
                     .insert(Bytes::copy_from_slice(self.key()));
             }
             self.next()?;
+        }
+        if self.is_valid() {
+            self.duplicated_elements.insert(Bytes::copy_from_slice(self.key()));
         }
         Ok(())
     }
@@ -69,7 +74,7 @@ impl StorageIterator for LsmIterator {
         self.inner_iterator
             .next()
             .expect("[LsmIterator::next] unable to call current iterator `next` method");
-        self.skip_deleted()
+        self.skip_deleted_duplicated()
     }
 }
 
