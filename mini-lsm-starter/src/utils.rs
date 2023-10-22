@@ -24,8 +24,8 @@ pub enum FileType {
 
 pub fn generate_sst_name(path: Option<&PathBuf>, sst_id: usize) -> PathBuf {
     if path.is_none() {
-        return tempdir().unwrap().join(sst_id.to_string() + ".sst");
+        return tempdir().unwrap().path().join(sst_id.to_string() + ".sst");
     }
-    path.join(sst_id.to_string() + ".sst")
+    path.unwrap().join(sst_id.to_string() + ".sst")
 }
 

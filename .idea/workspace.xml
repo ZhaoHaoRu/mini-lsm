@@ -10,6 +10,8 @@
     <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="update day4">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/utils.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/utils.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -43,49 +45,49 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_1.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_2.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_empty.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor": "Run",
-    "Cargo.Test table::tests.executor": "Run",
-    "Cargo.Test tests::compaction_compile_test.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_get.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_2.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync.executor": "Run",
-    "Cargo.Test two_merge_iterator_test.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "develop",
-    "last_opened_file_path": "/Users/zhaohaoru/rust_project/mini-lsm",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs": "true",
-    "settings.editor.selected.configurable": "reference.settings.project.statistic.project.settings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_empty.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::compaction_compile_test.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_get.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test two_merge_iterator_test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/zhaohaoru/rust_project/mini-lsm&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.statistic.project.settings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/mini-lsm-starter/src" />
     </key>
   </component>
-  <component name="RunManager" selected="Cargo.Test tests::compaction_compile_test">
+  <component name="RunManager" selected="Cargo.Test compaction_tests">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
       <option name="command" value="run" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -103,8 +105,25 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Test compaction_tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib tests::compaction_tests" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Test tests::compaction_compile_test" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
-      <option name="command" value="test --package mini-lsm-starter --lib tests::compile_test -- --exact" />
+      <option name="command" value="test --package mini-lsm-starter --lib tests::Compaction::compile_test -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -122,23 +141,6 @@
     </configuration>
     <configuration name="Test tests::day4_tests::test_storage_get_after_sync" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_get_after_sync -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test tests::day4_tests::test_storage_scan_memtable_1" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_scan_memtable_1 -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -208,19 +210,19 @@
     <list>
       <item itemvalue="Cargo.Run" />
       <item itemvalue="Cargo.Test tests::compaction_compile_test" />
+      <item itemvalue="Cargo.Test compaction_tests" />
       <item itemvalue="Cargo.Test tests::day4_tests::test_storage_get_after_sync" />
-      <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_1" />
       <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync" />
       <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2" />
       <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Cargo.Test compaction_tests" />
         <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync" />
         <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync" />
         <item itemvalue="Cargo.Test tests::day4_tests::test_storage_get_after_sync" />
         <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2" />
-        <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_1" />
       </list>
     </recent_temporary>
   </component>
@@ -243,7 +245,7 @@
       <workItem from="1697505603526" duration="346000" />
       <workItem from="1697505967111" duration="56264000" />
       <workItem from="1697859804989" duration="16505000" />
-      <workItem from="1697895523939" duration="11145000" />
+      <workItem from="1697895523939" duration="15681000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />

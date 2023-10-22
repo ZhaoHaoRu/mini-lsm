@@ -33,7 +33,7 @@ pub struct LsmStorageInner {
     #[allow(dead_code)]
     levels: Vec<Vec<Arc<SsTable>>>,
     /// The next SSTable ID.
-    next_sst_id: Arc<usize>,
+    next_sst_id: Arc<Mutex<usize>>,
     /// The block cache
     block_cache: Arc<BlockCache>,
 }
@@ -45,7 +45,7 @@ impl LsmStorageInner {
             imm_memtables: vec![],
             l0_sstables: vec![],
             levels: vec![],
-            next_sst_id: Arc::new(1),
+            next_sst_id: Arc::new(Mutex::new(1)),
             //NOTE: the default cache size is 4GB
             block_cache: Arc::new(Cache::new(4 * 1024 * 1024 * 1024)),
         }
@@ -180,16 +180,19 @@ impl LsmStorage {
         // Thirdly, remove the mem-table and put the SST into l0_tables in a critical section
         {
             let mut w = self.inner.write();
-            let mut object = w.as_ref().clone();
-            for (_, ss_table_builder) in ss_table_builders.into_iter().enumerate() {
-                ss_table_builder
-                    .build(
-                        *object.next_sst_id,
-                        Some(object.block_cache.clone()),
-                        utils::generate_sst_name(Some(&self.path), *object.next_sst_id),
-                    )
-                    .unwrap();
-                *object.next_sst_id += 1;
+            let object = w.as_ref().clone();
+            {
+                let mut next_sst_id = object.next_sst_id.lock().unwrap();
+                for (_, ss_table_builder) in ss_table_builders.into_iter().enumerate() {
+                    ss_table_builder
+                        .build(
+                            *next_sst_id,
+                            Some(object.block_cache.clone()),
+                            utils::generate_sst_name(Some(&self.path), *next_sst_id),
+                        )
+                        .unwrap();
+                    *next_sst_id += 1;
+                }
             }
             *w = Arc::new(object);
         }
