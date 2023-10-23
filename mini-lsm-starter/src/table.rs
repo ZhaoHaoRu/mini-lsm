@@ -81,10 +81,15 @@ impl FileObject {
 
     /// Create a new file object (day 2) and write the file to the disk (day 4).
     pub fn create(path: &Path, data: Vec<u8>) -> Result<Self> {
+        // assert the parent directory exists
+        let parent_dir = path.parent().unwrap();
+        if !parent_dir.exists() {
+            std::fs::create_dir_all(parent_dir).expect("[FileObject::create] create dir fail");
+        }
         // create a new file and write the data
-        let mut file = File::create(path)?;
-        file.write_all(&data[..])?;
-        file.flush()?;
+        let mut file = File::create(path).expect("[FileObject::create] create file fail");
+        file.write_all(&data[..]).expect("[FileObject::create] write file fail");
+        file.flush().expect("[FileObject::create] flush file fail");
         Ok(Self(Bytes::from(data)))
     }
 

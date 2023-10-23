@@ -421,6 +421,7 @@ dependencies = [
  "crossbeam-skiplist",
  "log",
  "moka",
+ "once_cell",
  "ouroboros",
  "parking_lot",
  "tempfile",

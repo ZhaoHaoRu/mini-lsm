@@ -96,9 +96,12 @@ impl SsTableBuilder {
         let offset_slices: [u8; 8] = meta_offset.to_be_bytes();
         data.put_slice(&offset_slices);
 
+        // make the data persistent
+        let file = FileObject::create(path.as_ref(), data)?;
+
         // generate the SsTable
         Ok(SsTable {
-            file: FileObject(Bytes::copy_from_slice(&data[..])),
+            file,
             block_metas: self.meta,
             block_meta_offset: meta_offset,
             block_cache,

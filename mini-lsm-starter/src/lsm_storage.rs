@@ -129,8 +129,6 @@ impl LsmStorage {
 
     /// Put a key-value pair into the storage by writing into the current memtable.
     pub fn put(&self, key: &[u8], value: &[u8]) -> Result<()> {
-        assert!(!value.is_empty(), "value cannot be empty");
-        assert!(!key.is_empty(), "key cannot be empty");
         let w = self.inner.read();
         w.memtable.put(key, value);
         Ok(())
