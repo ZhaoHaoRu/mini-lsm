@@ -1,24 +1,21 @@
-
+use crate::iterators::merge_iterator::MergeIterator;
+use crate::iterators::StorageIterator;
+use crate::lsm_storage::BlockCache;
+use crate::table::{SsTable, SsTableBuilder, SsTableIterator};
+use crate::utils;
+use anyhow::{Error, Result};
+use log::{debug, warn};
 use std::cmp::max;
 use std::collections::HashSet;
 use std::fs;
 use std::path::PathBuf;
-use std::sync::Arc;
-use anyhow::{Error, Result};
-use log::{debug, info, warn};
-use parking_lot::Mutex;
-use crate::iterators::{ StorageIterator};
-use crate::iterators::merge_iterator::MergeIterator;
-use crate::lsm_storage::BlockCache;
-use crate::table::{SsTable, SsTableBuilder, SsTableIterator};
-use crate::utils;
-
+use std::sync::{Arc, Mutex};
 
 // TODO(zhr): need to be configured by Option file in the future
 const L0_SIZE: usize = 2;
 const AMPLIFICATION_FACTOR: usize = 2;
 
-const BLOCK_SIZE: usize = 128;
+const BLOCK_SIZE: usize = 4096;
 
 /// A Compaction encapsulates information about a compaction.
 pub struct Compaction {
@@ -39,29 +36,51 @@ pub struct Compaction {
     /// The block cache
     block_cache: Option<Arc<BlockCache>>,
     /// The path of the storage
-    dir: PathBuf
+    dir: PathBuf,
 }
 
 impl Compaction {
+    pub fn new(
+        level: usize,
+        input: [Vec<Arc<SsTable>>; 2],
+        sst_id: Arc<Mutex<usize>>,
+        block_cache: Option<Arc<BlockCache>>,
+        dir: PathBuf,
+    ) -> Self {
+        Compaction {
+            level,
+            input_ss_tables: input,
+            max_file_size: 0,
+            left_key_bound: vec![],
+            right_key_bound: vec![],
+            upper_left_bound: 0,
+            upper_right_bound: 0,
+            lower_left_bound: 0,
+            lower_right_bound: 0,
+            next_sst_id: sst_id,
+            block_cache,
+            dir,
+        }
+    }
 
     fn level_needs_compaction(level: usize, level_size: usize) -> bool {
-        return if level == 0 {
+        if level == 0 {
             level_size >= L0_SIZE
         } else {
             level_size >= AMPLIFICATION_FACTOR.pow(level as u32)
         }
     }
 
-    pub fn needs_compaction(l0: &Vec<Arc<SsTable>>, levels: &Vec<Vec<Arc<SsTable>>>) -> bool {
+    pub fn needs_compaction(l0: &Vec<Arc<SsTable>>, levels: &[Vec<Arc<SsTable>>]) -> (bool, usize) {
         if Compaction::level_needs_compaction(0, l0.len()) {
-            return true;
+            return (true, 0);
         }
         for (level_id, level) in levels.iter().enumerate() {
             if Compaction::level_needs_compaction(level_id + 1, level.len()) {
-                return true;
+                return (true, level_id + 1);
             }
         }
-        false
+        (false, 0)
     }
 
     /// pick the ss-table in upper level for compaction
@@ -74,7 +93,8 @@ impl Compaction {
             return;
         }
 
-        let excess_size = level_size as i32 - (AMPLIFICATION_FACTOR as i32).pow(self.level as i32 as u32);
+        let excess_size =
+            level_size as i32 - (AMPLIFICATION_FACTOR as i32).pow(self.level as i32 as u32);
         assert!(excess_size >= 0);
         if excess_size == 0 {
             self.upper_left_bound = 0;
@@ -102,7 +122,9 @@ impl Compaction {
         let mut right_bound = oldest_idx + 1;
         while right_bound - left_bound < excess_size as usize {
             if left_bound > 0 && right_bound < level_size - 1 {
-                if self.input_ss_tables[0][left_bound - 1].get_sst_id() < self.input_ss_tables[0][right_bound + 1].get_sst_id() {
+                if self.input_ss_tables[0][left_bound - 1].get_sst_id()
+                    < self.input_ss_tables[0][right_bound + 1].get_sst_id()
+                {
                     left_bound -= 1;
                 } else {
                     right_bound += 1;
@@ -116,7 +138,6 @@ impl Compaction {
 
         (self.upper_left_bound, self.upper_right_bound) = (left_bound, right_bound);
     }
-
 
     /// get the key range for compaction in the upper level
     fn get_required_key_range(&mut self) {
@@ -137,7 +158,7 @@ impl Compaction {
 
         // if level is bigger than 0, the The latest n (excess count) of sstables
         //  need to be merged into the lower layer
-        if !self.input_ss_tables[0].is_empty()  {
+        if !self.input_ss_tables[0].is_empty() {
             self.left_key_bound = self.input_ss_tables[0][self.upper_left_bound].min_key();
             if self.upper_right_bound < self.input_ss_tables[0].len() {
                 self.right_key_bound = self.input_ss_tables[0][self.upper_right_bound].min_key();
@@ -154,25 +175,24 @@ impl Compaction {
             (self.lower_left_bound, self.lower_right_bound) = (0, 0);
             return;
         }
+
         let mut left = 0;
-        let mut id  = 0;
         let mut right = -1;
         let mut first = true;
-        for table in &self.input_ss_tables[1] {
+        for (id, table) in self.input_ss_tables[1].iter().enumerate() {
             if table.min_key() < self.left_key_bound {
                 left += 1;
             } else if first && table.min_key() >= self.left_key_bound {
-                left = max(id - 1, 0);
+                left = max(id as i32 - 1, 0);
                 first = false;
                 if self.right_key_bound.is_empty() {
                     right = self.input_ss_tables[1].len() as i32;
                     break;
                 }
             } else if table.min_key() > self.right_key_bound {
-                right = id;
+                right = id as i32;
                 break;
             }
-            id += 1;
         }
         if right < 0 {
             right = self.input_ss_tables[1].len() as i32;
@@ -184,16 +204,21 @@ impl Compaction {
     /// merge SsTables candidates in these two levels
     pub fn merge(&self) -> Result<Vec<Arc<SsTable>>> {
         let mut ss_table_iterators = vec![];
-        let upper_ss_tables_slices = &self.input_ss_tables[0][self.upper_left_bound..self.upper_right_bound];
+        let upper_ss_tables_slices =
+            &self.input_ss_tables[0][self.upper_left_bound..self.upper_right_bound];
         for ss_table in upper_ss_tables_slices {
-            ss_table_iterators.push(Box::new(SsTableIterator::create_and_seek_to_first(ss_table.to_owned()).unwrap()));
+            ss_table_iterators.push(Box::new(
+                SsTableIterator::create_and_seek_to_first(ss_table.to_owned()).unwrap(),
+            ));
         }
 
-
         if self.lower_left_bound < self.lower_right_bound {
-            let lower_ss_tables_slices = &self.input_ss_tables[1][self.lower_left_bound..self.lower_right_bound];
+            let lower_ss_tables_slices =
+                &self.input_ss_tables[1][self.lower_left_bound..self.lower_right_bound];
             for ss_table in lower_ss_tables_slices {
-                ss_table_iterators.push(Box::new(SsTableIterator::create_and_seek_to_first(ss_table.to_owned()).unwrap()));
+                ss_table_iterators.push(Box::new(
+                    SsTableIterator::create_and_seek_to_first(ss_table.to_owned()).unwrap(),
+                ));
             }
         }
 
@@ -218,18 +243,27 @@ impl Compaction {
                 deleted_elements.insert(key);
                 continue;
             }
-            if deleted_elements.contains(merge_iterator.key()) || duplicated_elements.contains(merge_iterator.key()) {
+            if deleted_elements.contains(merge_iterator.key())
+                || duplicated_elements.contains(merge_iterator.key())
+            {
                 continue;
             }
 
-            debug!("[Compaction::merge] current key: {:?}", String::from_utf8(key.clone()));
+            debug!(
+                "[Compaction::merge] current key: {:?}",
+                String::from_utf8(key.clone())
+            );
             duplicated_elements.insert(key);
 
-
             current_ss_table_builder.add(merge_iterator.key(), merge_iterator.value());
-            debug!("[Compaction::merge] the estimated size: {}, file's max size: {}", current_ss_table_builder.estimated_size(), self.max_file_size);
+            debug!(
+                "[Compaction::merge] the estimated size: {}, file's max size: {}",
+                current_ss_table_builder.estimated_size(),
+                self.max_file_size
+            );
             if current_ss_table_builder.estimated_size() >= self.max_file_size {
-                let replaced_ss_table_builder = std::mem::replace(&mut current_ss_table_builder, SsTableBuilder::new(4096));
+                let replaced_ss_table_builder =
+                    std::mem::replace(&mut current_ss_table_builder, SsTableBuilder::new(4096));
                 ss_table_builders.push(replaced_ss_table_builder);
             }
 
@@ -243,27 +277,31 @@ impl Compaction {
         // generate the new ss-tables
         result.reserve(ss_table_builders.len());
         {
-            let mut next_sst_id = self.next_sst_id.lock();
+            let mut next_sst_id = self.next_sst_id.lock().unwrap();
             for (_, ss_table_builder) in ss_table_builders.into_iter().enumerate() {
                 result.push(Arc::new(
-                    ss_table_builder.build(*next_sst_id,
-                                           self.block_cache.clone(),
-                                           utils::generate_sst_name(Some(&self.dir), *next_sst_id)
-                    ).expect("[compaction::merge_sort] build new ss-table fail")));
+                    ss_table_builder
+                        .build(
+                            *next_sst_id,
+                            self.block_cache.clone(),
+                            utils::generate_sst_name(Some(&self.dir), *next_sst_id),
+                        )
+                        .expect("[compaction::merge_sort] build new ss-table fail"),
+                ));
                 *next_sst_id += 1;
             }
         }
 
-
         Ok(result)
     }
-
 
     pub fn compact_two_levels(&mut self) -> Result<()> {
         // find the file to be compacted in the upper level
         self.pick_compaction();
         if self.upper_right_bound - self.upper_left_bound == 0 {
-            return Err(Error::msg("[Compaction::compact_two_levels] no need for compaction"));
+            return Err(Error::msg(
+                "[Compaction::compact_two_levels] no need for compaction",
+            ));
         }
 
         // find the upper key range for compaction
@@ -278,7 +316,9 @@ impl Compaction {
             return Ok(());
         }
 
-        Err(Error::msg("[Compaction::compact_two_levels] compact two level fail"))
+        Err(Error::msg(
+            "[Compaction::compact_two_levels] compact two level fail",
+        ))
     }
 
     /// delete the expired files after compaction and generate the new level
@@ -292,22 +332,32 @@ impl Compaction {
 
         // deleted the expired files
         if self.upper_right_bound > self.upper_left_bound {
-            let upper_table_slices = &self.input_ss_tables[0][self.upper_left_bound..self.upper_right_bound];
+            let upper_table_slices =
+                &self.input_ss_tables[0][self.upper_left_bound..self.upper_right_bound];
             for table in upper_table_slices {
-                delete_file_func(utils::generate_sst_name(Some(&self.dir), table.get_sst_id())).expect("[Compression::delete_file_func] delete expired file fail");
+                delete_file_func(utils::generate_sst_name(
+                    Some(&self.dir),
+                    table.get_sst_id(),
+                ))
+                .expect("[Compression::delete_file_func] delete expired file fail");
             }
         }
         if self.lower_right_bound > self.lower_left_bound {
-            let lower_table_slices = &self.input_ss_tables[1][self.lower_left_bound..self.lower_right_bound];
+            let lower_table_slices =
+                &self.input_ss_tables[1][self.lower_left_bound..self.lower_right_bound];
             for table in lower_table_slices {
-                delete_file_func(utils::generate_sst_name(Some(&self.dir), table.get_sst_id())).expect("[Compression::delete_file_func] delete expired file fail");
+                delete_file_func(utils::generate_sst_name(
+                    Some(&self.dir),
+                    table.get_sst_id(),
+                ))
+                .expect("[Compression::delete_file_func] delete expired file fail");
             }
         }
 
         // generate the new levels with the PARAM new_ss_tables
         self.input_ss_tables[0].drain(self.upper_left_bound..self.upper_right_bound);
 
-        /// XXX(zhr): the splice method is not effective, has to delete first and then insert by iterating
+        // XXX(zhr): the splice method is not effective, has to delete first and then insert by iterating
         self.input_ss_tables[1].drain(self.lower_left_bound..self.lower_right_bound);
         for (i, new_table) in new_ss_tables.into_iter().enumerate() {
             self.input_ss_tables[1].insert(self.lower_left_bound + i, new_table);
@@ -325,55 +375,29 @@ impl Compaction {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::env;
-    use std::path::PathBuf;
-    use std::sync::Arc;
-    use log::LevelFilter;
-    use tempfile::{TempDir, tempdir};
-    use parking_lot::Mutex;
     use crate::compaction::Compaction;
     use crate::iterators::StorageIterator;
-    use crate::table::{SsTable, SsTableBuilder, SsTableIterator};
+    use crate::table::{SsTable, SsTableIterator};
+    use crate::tests::utils::{generate_sst, key_of, new_value_of, value_of};
+    use log::LevelFilter;
+    use std::env;
+    use std::path::Path;
+    use std::sync::{Arc, Mutex};
+    use tempfile::tempdir;
 
-
-    fn key_of(idx: usize) -> Vec<u8> {
-        format!("key_{:05}", idx).into_bytes()
-    }
-
-    fn value_of(idx: usize) -> Vec<u8> {
-        format!("value_{:010}", idx).into_bytes()
-    }
-
-    fn new_value_of(idx: usize) -> Vec<u8> {
-        format!("value_{:010}", idx + 1).into_bytes()
-    }
-
-    fn generate_sst(lower_bound: usize, upper_bound: usize, sst_id: usize, is_new: bool, dir: &PathBuf) -> SsTable {
-        let mut builder = SsTableBuilder::new(128);
-        for idx in lower_bound..upper_bound {
-            let key = key_of(idx);
-            if is_new {
-                let value = new_value_of(idx);
-                builder.add(&key[..], &value[..]);
-            } else {
-                let value = value_of(idx);
-                builder.add(&key[..], &value[..]);
-            }
-        }
-        let path = dir.join(sst_id.to_string() + ".sst");
-        builder.build(sst_id, None, path).unwrap()
-    }
-
-    fn basic_setup(dir: &PathBuf) -> Compaction {
-        let level0 = vec![Arc::new(generate_sst(0, 100, 6, false, dir)),
-                          Arc::new(generate_sst(50, 150, 5, false, dir)),
-                          Arc::new(generate_sst(100, 200, 4, false, dir))];
-        let level1 = vec![Arc::new(generate_sst(100, 200, 3, false, dir)),
-                          Arc::new(generate_sst(200, 300, 2, false, dir)),
-                          Arc::new(generate_sst(300, 400, 1, false, dir))];
+    fn basic_setup(dir: &Path) -> Compaction {
+        let level0 = vec![
+            Arc::new(generate_sst(0, 100, 6, false, dir)),
+            Arc::new(generate_sst(50, 150, 5, false, dir)),
+            Arc::new(generate_sst(100, 200, 4, false, dir)),
+        ];
+        let level1 = vec![
+            Arc::new(generate_sst(100, 200, 3, false, dir)),
+            Arc::new(generate_sst(200, 300, 2, false, dir)),
+            Arc::new(generate_sst(300, 400, 1, false, dir)),
+        ];
         Compaction {
             level: 0,
             input_ss_tables: [level0, level1],
@@ -386,17 +410,21 @@ mod tests {
             lower_right_bound: 0,
             next_sst_id: Arc::new(Mutex::new(10)),
             block_cache: None,
-            dir: dir.to_path_buf()
+            dir: dir.to_path_buf(),
         }
     }
 
-    fn basic_setup2(dir: &PathBuf) -> Compaction {
-        let level1 = vec![Arc::new(generate_sst(100, 200, 7, false, dir)),
-                          Arc::new(generate_sst(200, 300, 6, false, dir)),
-                          Arc::new(generate_sst(300, 400, 8, false, dir))];
-        let level2 = vec![Arc::new(generate_sst(100, 200, 3, false, dir)),
-                          Arc::new(generate_sst(300, 400, 2, false, dir)),
-                          Arc::new(generate_sst(400, 500, 1, false, dir))];
+    fn basic_setup2(dir: &Path) -> Compaction {
+        let level1 = vec![
+            Arc::new(generate_sst(100, 200, 7, false, dir)),
+            Arc::new(generate_sst(200, 300, 6, false, dir)),
+            Arc::new(generate_sst(300, 400, 8, false, dir)),
+        ];
+        let level2 = vec![
+            Arc::new(generate_sst(100, 200, 3, false, dir)),
+            Arc::new(generate_sst(300, 400, 2, false, dir)),
+            Arc::new(generate_sst(400, 500, 1, false, dir)),
+        ];
         Compaction {
             level: 1,
             input_ss_tables: [level1, level2],
@@ -409,17 +437,21 @@ mod tests {
             lower_right_bound: 0,
             next_sst_id: Arc::new(Mutex::new(10)),
             block_cache: None,
-            dir: dir.to_path_buf()
+            dir: dir.to_path_buf(),
         }
     }
 
-    fn complicated_setup1(dir: &PathBuf) -> Compaction {
-        let level1 = vec![Arc::new(generate_sst(100, 200, 7, true, dir)),
-                          Arc::new(generate_sst(200, 300, 6, true, dir)),
-                          Arc::new(generate_sst(400, 500, 8, true, dir))];
-        let level2 = vec![Arc::new(generate_sst(150, 250, 3, false, dir)),
-                            Arc::new(generate_sst(250, 450, 2, false, dir)),
-                            Arc::new(generate_sst(450, 600, 1, false, dir))];
+    fn complicated_setup1(dir: &Path) -> Compaction {
+        let level1 = vec![
+            Arc::new(generate_sst(100, 200, 7, true, dir)),
+            Arc::new(generate_sst(200, 300, 6, true, dir)),
+            Arc::new(generate_sst(400, 500, 8, true, dir)),
+        ];
+        let level2 = vec![
+            Arc::new(generate_sst(150, 250, 3, false, dir)),
+            Arc::new(generate_sst(250, 450, 2, false, dir)),
+            Arc::new(generate_sst(450, 600, 1, false, dir)),
+        ];
 
         Compaction {
             level: 1,
@@ -433,7 +465,7 @@ mod tests {
             lower_right_bound: 0,
             next_sst_id: Arc::new(Mutex::new(11)),
             block_cache: None,
-            dir: dir.to_path_buf()
+            dir: dir.to_path_buf(),
         }
     }
 
@@ -462,39 +494,6 @@ mod tests {
                     value_of(counter),
                     "expected value: {:?}, actual value: {:?}",
                     String::from_utf8(value_of(counter)),
-                    String::from_utf8(Vec::from(value))
-                );
-                iter.next().unwrap();
-                counter += 1;
-            }
-        }
-    }
-
-    fn check_complicated_sst_table_content(tables: &Vec<Arc<SsTable>>, start: usize) {
-        if tables.is_empty() {
-            return;
-        }
-        let mut counter = start;
-        for table in tables {
-            let mut iter = SsTableIterator::create_and_seek_to_first(table.clone()).unwrap();
-            loop {
-                if !iter.is_valid() {
-                    break;
-                }
-                let key = iter.key();
-                let value = iter.value();
-                assert_eq!(
-                    key,
-                    key_of(counter),
-                    "expected key: {:?}, actual key: {:?}",
-                    String::from_utf8(key_of(counter)),
-                    String::from_utf8(Vec::from(key))
-                );
-                assert_eq!(
-                    value,
-                    new_value_of(counter),
-                    "expected value: {:?}, actual value: {:?}",
-                    String::from_utf8(new_value_of(counter)),
                     String::from_utf8(Vec::from(value))
                 );
                 iter.next().unwrap();
@@ -565,7 +564,6 @@ mod tests {
         assert_eq!(compaction.lower_left_bound, 0);
         assert_eq!(compaction.lower_right_bound, 3);
 
-
         compaction = basic_setup2(&dir);
         compaction.level = 0;
         compaction.pick_compaction();
@@ -610,7 +608,7 @@ mod tests {
         compaction.get_required_key_range();
         compaction.get_overlapped_range();
         let result = compaction.merge().unwrap();
-        assert!(result.len() >= 1);
+        assert!(!result.is_empty());
         assert_eq!(result[0].min_key(), key_of(100));
         check_sst_table_content(&result, 100);
     }
@@ -635,43 +633,44 @@ mod tests {
         assert_eq!(compaction.lower_right_bound, 3);
 
         let result = compaction.merge().unwrap();
-        assert!(result.len() >= 1);
+        assert!(!result.is_empty());
         assert_eq!(result[0].min_key(), key_of(100));
 
-        let check_updated_content = |iter: &mut SsTableIterator, lower_bound: usize, upper_bound: usize, is_new: bool| {
-            for i in lower_bound..upper_bound {
-                if !iter.is_valid() {
-                    break;
-                }
-                let key = iter.key();
-                let value = iter.value();
-                assert_eq!(
-                    key,
-                    key_of(i),
-                    "expected key: {:?}, actual key: {:?}",
-                    String::from_utf8(key_of(i)),
-                    String::from_utf8(Vec::from(key))
-                );
-                if is_new {
+        let check_updated_content =
+            |iter: &mut SsTableIterator, lower_bound: usize, upper_bound: usize, is_new: bool| {
+                for i in lower_bound..upper_bound {
+                    if !iter.is_valid() {
+                        break;
+                    }
+                    let key = iter.key();
+                    let value = iter.value();
                     assert_eq!(
-                        value,
-                        new_value_of(i),
-                        "expected value: {:?}, actual value: {:?}",
-                        String::from_utf8(new_value_of(i)),
-                        String::from_utf8(Vec::from(value))
+                        key,
+                        key_of(i),
+                        "expected key: {:?}, actual key: {:?}",
+                        String::from_utf8(key_of(i)),
+                        String::from_utf8(Vec::from(key))
                     );
-                } else {
-                    assert_eq!(
-                        value,
-                        value_of(i),
-                        "expected value: {:?}, actual value: {:?}",
-                        String::from_utf8(value_of(i)),
-                        String::from_utf8(Vec::from(value))
-                    );
+                    if is_new {
+                        assert_eq!(
+                            value,
+                            new_value_of(i),
+                            "expected value: {:?}, actual value: {:?}",
+                            String::from_utf8(new_value_of(i)),
+                            String::from_utf8(Vec::from(value))
+                        );
+                    } else {
+                        assert_eq!(
+                            value,
+                            value_of(i),
+                            "expected value: {:?}, actual value: {:?}",
+                            String::from_utf8(value_of(i)),
+                            String::from_utf8(Vec::from(value))
+                        );
+                    }
+                    iter.next().unwrap();
                 }
-                iter.next().unwrap();
-            }
-        };
+            };
 
         let mut iter = SsTableIterator::create_and_seek_to_first(result[0].clone()).unwrap();
         check_updated_content(&mut iter, 100, 300, true);
@@ -679,7 +678,6 @@ mod tests {
         check_updated_content(&mut iter, 400, 500, true);
         check_updated_content(&mut iter, 500, 600, false);
     }
-
 
     #[test]
     fn test_uninstall_and_install_file() {
@@ -694,7 +692,7 @@ mod tests {
         assert_eq!(compaction.input_ss_tables[1].len(), 1);
         assert_eq!(compaction.input_ss_tables[1][0].get_sst_id(), 10);
         {
-            let next_sst_id = compaction.next_sst_id.lock();
+            let next_sst_id = compaction.next_sst_id.lock().unwrap();
             assert_eq!(*next_sst_id, 11);
         }
 
@@ -708,7 +706,7 @@ mod tests {
         assert_eq!(compaction.input_ss_tables[1].len(), 2);
         assert_eq!(compaction.input_ss_tables[1][0].get_sst_id(), 10);
         {
-            let next_sst_id = compaction.next_sst_id.lock();
+            let next_sst_id = compaction.next_sst_id.lock().unwrap();
             assert_eq!(*next_sst_id, 11);
         }
 

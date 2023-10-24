@@ -8,13 +8,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="update day4">
+      <change afterPath="$PROJECT_DIR$/mini-lsm-starter/src/tests/utils.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/Cargo.toml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_iterator.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/mem_table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/mem_table.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/tests.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/tests/compaction_tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/tests/macro_tests.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/tests/day4_tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/tests/day4_tests.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/utils.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/utils.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,6 +77,7 @@
     "Cargo.Test tests::compaction_compile_test.executor": "Run",
     "Cargo.Test tests::day4_tests::test_storage_get.executor": "Run",
     "Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor": "Run",
+    "Cargo.Test tests::day4_tests::test_storage_scan_after_compaction.executor": "Run",
     "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1.executor": "Run",
     "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync.executor": "Run",
     "Cargo.Test tests::day4_tests::test_storage_scan_memtable_2.executor": "Run",
@@ -101,94 +106,9 @@
       <recent name="$PROJECT_DIR$/mini-lsm-starter/src" />
     </key>
   </component>
-  <component name="RunManager" selected="Cargo.Test compaction::tests::test_uninstall_and_install_file">
+  <component name="RunManager" selected="Cargo.Test tests::day4_tests::test_storage_scan_after_compaction">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
       <option name="command" value="run" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test compaction::tests::test_get_overlapped_range" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib compaction::tests::test_get_overlapped_range -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test compaction::tests::test_get_required_key_range" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib compaction::tests::test_get_required_key_range -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test compaction::tests::test_merge_micro" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib compaction::tests::test_merge_micro -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test compaction::tests::test_merge_more_complicated" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib compaction::tests::test_merge_more_complicated -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test compaction::tests::test_uninstall_and_install_file" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib compaction::tests::test_uninstall_and_install_file -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -221,22 +141,107 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Test tests::day4_tests::test_storage_get_after_sync" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_get_after_sync -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test tests::day4_tests::test_storage_scan_after_compaction" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_scan_after_compaction -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test tests::day4_tests::test_storage_scan_memtable_1_after_sync" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_scan_memtable_1_after_sync -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test tests::day4_tests::test_storage_scan_memtable_2" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_scan_memtable_2 -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test tests::day4_tests::test_storage_scan_memtable_2_after_sync" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_scan_memtable_2_after_sync -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="Cargo.Run" />
       <item itemvalue="Cargo.Test tests::compaction_compile_test" />
-      <item itemvalue="Cargo.Test compaction::tests::test_get_overlapped_range" />
-      <item itemvalue="Cargo.Test compaction::tests::test_get_required_key_range" />
-      <item itemvalue="Cargo.Test compaction::tests::test_merge_micro" />
-      <item itemvalue="Cargo.Test compaction::tests::test_merge_more_complicated" />
-      <item itemvalue="Cargo.Test compaction::tests::test_uninstall_and_install_file" />
+      <item itemvalue="Cargo.Test tests::day4_tests::test_storage_get_after_sync" />
+      <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync" />
+      <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2" />
+      <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync" />
+      <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_after_compaction" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Cargo.Test compaction::tests::test_uninstall_and_install_file" />
-        <item itemvalue="Cargo.Test compaction::tests::test_merge_more_complicated" />
-        <item itemvalue="Cargo.Test compaction::tests::test_merge_micro" />
-        <item itemvalue="Cargo.Test compaction::tests::test_get_overlapped_range" />
-        <item itemvalue="Cargo.Test compaction::tests::test_get_required_key_range" />
+        <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_after_compaction" />
+        <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync" />
+        <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync" />
+        <item itemvalue="Cargo.Test tests::day4_tests::test_storage_get_after_sync" />
+        <item itemvalue="Cargo.Test tests::day4_tests::test_storage_scan_memtable_2" />
       </list>
     </recent_temporary>
   </component>
@@ -261,7 +266,10 @@
       <workItem from="1697859804989" duration="16505000" />
       <workItem from="1697895523939" duration="15681000" />
       <workItem from="1697962146511" duration="2281000" />
-      <workItem from="1698023496925" duration="18440000" />
+      <workItem from="1698023496925" duration="20251000" />
+      <workItem from="1698111126262" duration="2831000" />
+      <workItem from="1698113976624" duration="7378000" />
+      <workItem from="1698126707470" duration="8182000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
@@ -335,24 +343,14 @@
           <option name="timeStamp" value="54" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
-          <line>89</line>
-          <option name="timeStamp" value="68" />
+          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/tests/day4_tests.rs</url>
+          <line>14</line>
+          <option name="timeStamp" value="124" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs</url>
-          <line>137</line>
-          <option name="timeStamp" value="71" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs</url>
-          <line>153</line>
-          <option name="timeStamp" value="72" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs</url>
-          <line>307</line>
-          <option name="timeStamp" value="94" />
+          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/lsm_iterator.rs</url>
+          <line>29</line>
+          <option name="timeStamp" value="125" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

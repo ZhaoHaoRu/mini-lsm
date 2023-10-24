@@ -88,7 +88,8 @@ impl FileObject {
         }
         // create a new file and write the data
         let mut file = File::create(path).expect("[FileObject::create] create file fail");
-        file.write_all(&data[..]).expect("[FileObject::create] write file fail");
+        file.write_all(&data[..])
+            .expect("[FileObject::create] write file fail");
         file.flush().expect("[FileObject::create] flush file fail");
         Ok(Self(Bytes::from(data)))
     }
@@ -234,7 +235,7 @@ impl SsTable {
     }
 
     pub fn min_key(&self) -> Vec<u8> {
-        if self.block_metas.len() > 0 {
+        if !self.block_metas.is_empty() {
             return Vec::from(self.block_metas[0].first_key.clone());
         }
         vec![]

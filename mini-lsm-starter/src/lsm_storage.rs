@@ -7,10 +7,12 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::{Error, Result};
 use bytes::Bytes;
+use log::debug;
 use moka::sync::Cache;
 use parking_lot::RwLock;
 
 use crate::block::Block;
+use crate::compaction::Compaction;
 use crate::iterators::merge_iterator::MergeIterator;
 use crate::iterators::two_merge_iterator::TwoMergeIterator;
 use crate::iterators::StorageIterator;
@@ -55,17 +57,16 @@ impl LsmStorageInner {
 /// The storage interface of the LSM tree.
 pub struct LsmStorage {
     inner: Arc<RwLock<Arc<LsmStorageInner>>>,
-    mutex: Mutex<i32>,
+    /// The mutex to hold when change the lsm structure, such as sync and compaction
+    structure_mutex: Mutex<i32>,
     path: PathBuf,
 }
-
-
 
 impl LsmStorage {
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         Ok(Self {
             inner: Arc::new(RwLock::new(Arc::new(LsmStorageInner::create()))),
-            mutex: Mutex::new(0),
+            structure_mutex: Mutex::new(0),
             path: path.as_ref().to_path_buf(),
         })
     }
@@ -147,7 +148,7 @@ impl LsmStorage {
     /// In day 6: call `fsync` on WAL.
     pub fn sync(&self) -> Result<()> {
         let _unused = self
-            .mutex
+            .structure_mutex
             .lock()
             .expect("[LsmStorage::sync] encounter an error when acquire lock");
 
@@ -178,20 +179,27 @@ impl LsmStorage {
         // Thirdly, remove the mem-table and put the SST into l0_tables in a critical section
         {
             let mut w = self.inner.write();
-            let object = w.as_ref().clone();
+            let mut object = w.as_ref().clone();
             {
                 let mut next_sst_id = object.next_sst_id.lock().unwrap();
                 for (_, ss_table_builder) in ss_table_builders.into_iter().enumerate() {
-                    ss_table_builder
-                        .build(
-                            *next_sst_id,
-                            Some(object.block_cache.clone()),
-                            utils::generate_sst_name(Some(&self.path), *next_sst_id),
-                        )
-                        .unwrap();
+                    object.l0_sstables.insert(
+                        0,
+                        Arc::new(
+                            ss_table_builder
+                                .build(
+                                    *next_sst_id,
+                                    Some(object.block_cache.clone()),
+                                    utils::generate_sst_name(Some(&self.path), *next_sst_id),
+                                )
+                                .unwrap(),
+                        ),
+                    );
                     *next_sst_id += 1;
                 }
             }
+            // remove the immutable mem-tables
+            object.imm_memtables.clear();
             *w = Arc::new(object);
         }
 
@@ -223,7 +231,11 @@ impl LsmStorage {
                 boundary = Vec::from(value);
                 let len = boundary.len();
                 if len > 0 {
-                    boundary[len - 1] = 255;
+                    if boundary[len - 1] < 255 {
+                        boundary[len - 1] += 1;
+                    } else {
+                        boundary.push(0);
+                    }
                 }
             }
             Bound::Included(value) => {
@@ -247,12 +259,109 @@ impl LsmStorage {
             }
         }
 
+        debug!("[LSMStorage::scan] generate the iterator");
         Ok(FusedIterator::new(LsmIterator::new(
             TwoMergeIterator::create(
                 MergeIterator::create(mem_table_iterators),
                 MergeIterator::create(ss_table_iterators),
             )
             .unwrap(),
+            _upper,
         )))
+    }
+
+    /// compaction from level 0 to level n until satisfy the condition
+    pub fn compaction(&self, start_level: usize) -> Result<()> {
+        let _structure_lock = self
+            .structure_mutex
+            .lock()
+            .expect("[LsmStorage::compaction] encounter an error when acquire lock");
+        let mut level = start_level;
+
+        // get some metadata
+        let dir = self.path.clone();
+        let block_cache;
+        let next_sst_id;
+        {
+            let object = self.inner.read();
+            block_cache = Some(object.block_cache.clone());
+            next_sst_id = object.next_sst_id.clone();
+        }
+
+        loop {
+            // get the ss-table candidate for compaction
+            let level_n;
+            let mut level_n_1 = vec![];
+            {
+                let object = self.inner.read();
+                if level > object.levels.len() {
+                    break;
+                }
+                if level == 0 {
+                    level_n = object.l0_sstables.clone();
+                    if !object.levels.is_empty() {
+                        level_n_1 = object.levels[0].clone();
+                    }
+                } else {
+                    level_n = object.levels[level - 1].clone();
+                    if level < object.levels.len() {
+                        level_n_1 = object.levels[level].clone();
+                    }
+                }
+            }
+
+            // generate the compaction instance
+            let mut compaction_instance = Compaction::new(
+                level,
+                [level_n, level_n_1],
+                next_sst_id.clone(),
+                block_cache.clone(),
+                dir.clone(),
+            );
+            // do compaction work
+            compaction_instance
+                .compact_two_levels()
+                .unwrap_or_else(|_| {
+                    panic!(
+                        "{}",
+                        &format!(
+                            "[LsmStorage::compaction] compaction level {} and level {} fail",
+                            level,
+                            level + 1
+                        )
+                    )
+                });
+
+            // install the compaction result
+            let new_levels = compaction_instance.generate_output();
+            assert_eq!(new_levels.len(), 2);
+            {
+                let object = self.inner.write();
+                let mut snapshot = object.as_ref().clone();
+                if level == 0 {
+                    snapshot.l0_sstables = new_levels[0].clone();
+                    if snapshot.levels.is_empty() {
+                        snapshot.levels.push(new_levels[1].clone());
+                    } else {
+                        snapshot.levels[0] = new_levels[1].clone();
+                    }
+                } else {
+                    snapshot.levels[level - 1] = new_levels[0].clone();
+                    if level >= snapshot.levels.len() {
+                        snapshot.levels.push(new_levels[1].clone());
+                    } else {
+                        snapshot.levels[level] = new_levels[1].clone();
+                    }
+                }
+            }
+
+            // judge whether need to stop compaction
+            if compaction_instance.is_finished() {
+                break;
+            }
+
+            level += 1;
+        }
+        Ok(())
     }
 }

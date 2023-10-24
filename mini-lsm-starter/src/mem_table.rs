@@ -10,6 +10,7 @@ use ouroboros::self_referencing;
 
 use crate::iterators::StorageIterator;
 use crate::table::SsTableBuilder;
+use crate::utils;
 
 /// A basic mem-table based on crossbeam-skiplist
 pub struct MemTable {
@@ -26,14 +27,6 @@ impl MemTableIterator {
 }
 
 impl MemTable {
-    fn from_slice_to_bytes(former: Bound<&[u8]>) -> Bound<Bytes> {
-        match former {
-            Bound::Excluded(data) => Bound::Excluded(Bytes::copy_from_slice(data)),
-            Bound::Included(data) => Bound::Included(Bytes::copy_from_slice(data)),
-            Bound::Unbounded => Bound::Unbounded,
-        }
-    }
-
     /// Create a new mem-table.
     pub fn create() -> Self {
         Self {
@@ -57,8 +50,8 @@ impl MemTable {
     /// Get an iterator over a range of keys.
     pub fn scan(&self, lower: Bound<&[u8]>, upper: Bound<&[u8]>) -> MemTableIterator {
         // MemTableIterator::new(Arc::clone(&self.map), self.map.range(MemTable::from_slice_to_bytes(lower)..MemTable::from_slice_to_bytes(upper)), (item.key().to_owned(), item.value().to_owned()))
-        let lower_bound = MemTable::from_slice_to_bytes(lower);
-        let upper_bound = MemTable::from_slice_to_bytes(upper);
+        let lower_bound = utils::from_slice_to_bytes(lower);
+        let upper_bound = utils::from_slice_to_bytes(upper);
         let mut mem_table_iterator = MemTableIteratorBuilder {
             map: self.map.clone(),
             iter_builder: |map| map.range((lower_bound, upper_bound)),
