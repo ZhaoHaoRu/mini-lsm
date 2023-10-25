@@ -1,4 +1,5 @@
 use super::Block;
+use crate::block::filter::Filter;
 use bytes::BufMut;
 
 /// Builds a block.
@@ -7,6 +8,8 @@ pub struct BlockBuilder {
     target_size: usize,
     cur_size: usize,
     last_key: Vec<u8>,
+    /// The bloom filter for the block.
+    filter: Filter,
 }
 
 impl BlockBuilder {
@@ -22,6 +25,7 @@ impl BlockBuilder {
             target_size,
             cur_size: 0,
             last_key: Vec::new(),
+            filter: Filter::new(block_size / 32),
         }
     }
 
@@ -54,6 +58,9 @@ impl BlockBuilder {
         self.block.data.put_slice(value);
         self.cur_size += needed;
 
+        // update the filter
+        self.filter.insert(key);
+
         true
     }
 
@@ -63,8 +70,8 @@ impl BlockBuilder {
     }
 
     /// Finalize the block.
-    pub fn build(self) -> Block {
-        self.block
+    pub fn build(self) -> (Block, Filter) {
+        (self.block, self.filter)
     }
 
     pub fn get_size(&self) -> usize {

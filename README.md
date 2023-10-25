@@ -61,3 +61,31 @@ We have reference solution up to day 4 and tutorial up to day 4 for now.
 - 将以上的所有SSTable文件根据上面介绍的算法继续进行Compaction
 
 - 对于其他层以此类推
+
+### Bloom filter
+仿照leveldb中SSTable的结构，在加入Bloom filter之后，SSTable的结构如下：
+```shell
++-------------------------+
+|       Data Blocks       |
++-------------------------+
+|      Filter Blocks      |
++-------------------------+
+|       Meta Blocks       |
++-------------------------+
+|   Filter Index Blocks   |
++-------------------------+
+| Meta block offset (u32) |			# indicate the position of meta block
++-------------------------+
+|Filter block offset (u32)|			# indicate the position of the filter index block
++-------------------------+
+```
+- 其中，Filter Blocks中存储的是Bloom filter的数据，Filter Index Blocks中存储的是每个filter block的offset
+```
+-------------------------------------------------------
+| offset1 (u32) | offset2 (u32) | ... | offsetN (u32) |
+-------------------------------------------------------
+```
+- 为了加快SSTable中数据查询的效率，在直接查询data block中的内容之前，leveldb首先根据filter block中的过滤数据判断指定的data block中是否有需要查询的数据，若判断不存在，则无需对这个data block进行数据查找。
+，Filter Index Blocks中存储的是Bloom filter的索引，Meta Blocks中存储的是SSTable的元信息，Data Blocks中存储的是SSTable的数据。
+- 在生成SSTable的时候，会为每个data block生成一个filter block，filter block使用了`cargo.io`中[现成的crate](https://docs.rs/bloomfilter/latest/bloomfilter/struct.Bloom.html)。
+  - 每个filter block的大小为一个data block大小的 1/32

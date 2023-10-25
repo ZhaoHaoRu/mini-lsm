@@ -16,6 +16,7 @@ use bytes::{Buf, BufMut, Bytes};
 pub use iterator::SsTableIterator;
 use log::{log, Level};
 
+use crate::block::filter::Filter;
 use crate::block::Block;
 use crate::lsm_storage::BlockCache;
 
@@ -67,6 +68,35 @@ impl BlockMeta {
     }
 }
 
+pub struct FilterIndex {}
+
+impl FilterIndex {
+    pub fn encode_filter_index(data: &Vec<u32>, buf: &mut Vec<u8>) {
+        buf.reserve(buf.len() + data.len() * 4);
+        for elem in data {
+            let elem_slice: [u8; 4] = elem.to_be_bytes();
+            buf.put_slice(&elem_slice);
+        }
+    }
+
+    pub fn decode_filter_index(buf: Vec<u8>) -> Vec<u32> {
+        let buf_len = buf.len();
+        let mut index = 0;
+        let mut result = Vec::new();
+        result.reserve(buf_len / 4);
+        while index + 4 <= buf_len {
+            result.push(
+                (u32::from(buf[index]) << 24)
+                    | (u32::from(buf[index + 1]) << 16)
+                    | (u32::from(buf[index + 2]) << 8)
+                    | (u32::from(buf[index + 3])),
+            );
+            index += 4;
+        }
+        result
+    }
+}
+
 /// A file object.
 pub struct FileObject(Bytes);
 
@@ -110,18 +140,24 @@ impl FileObject {
     }
 }
 
-/// -------------------------------------------------------------------------------------------------------
-/// |              Data Block             |             Meta Block              |          Extra          |
-/// -------------------------------------------------------------------------------------------------------
-/// | Data Block #1 | ... | Data Block #N | Meta Block #1 | ... | Meta Block #N | Meta Block Offset (u32) |
-/// -------------------------------------------------------------------------------------------------------
+/// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// |              Data Block              |              Filter Block              |             Meta Block              |                    Filter index Block             |                          Extra                       |                  |
+/// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/// | Data Block #1 | ... | Data Block #N | Filter Block #1 | ... |Filter Block #N | Meta Block #1 | ... | Meta Block #N |Filter index Block #1 | ... | Filter index Block #N |  Meta Block Offset (u32) | Filter index Block (u32) | Block Size (u32)  |
+/// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 pub struct SsTable {
     /// The actual storage unit of SsTable, the format is as above.
     file: FileObject,
     /// The meta blocks that hold info for data blocks.
     block_metas: Vec<BlockMeta>,
+    /// The bloom filters
+    filters: Vec<Filter>,
     /// The offset that indicates the start point of meta blocks in `file`.
-    block_meta_offset: usize,
+    block_meta_offset: u32,
+    /// The offset that indicates the start point of the filter index blocks in `file`
+    filter_index_offset: u32,
+    /// The offset that indicates the start point of the filter block, also the end point of the data blocks
+    filter_block_offset: u32,
     /// The block cache
     block_cache: Option<Arc<BlockCache>>,
     /// The sst id
@@ -136,32 +172,73 @@ impl SsTable {
 
     /// Open SSTable from a file.
     pub fn open(id: usize, block_cache: Option<Arc<BlockCache>>, file: FileObject) -> Result<Self> {
-        // get the meta block offset
+        // get the meta block offset and filter offset
         let file_size = file.0.len();
         let file_ref = &file.0;
         let mut cursor = Cursor::new(file_ref);
         cursor
-            .seek(SeekFrom::Start((file_size - 8) as u64))
+            .seek(SeekFrom::Start((file_size - 12) as u64))
             .expect("[SsTable::open] the file is too small");
-        let meta_offset = cursor.get_u64();
+        let meta_offset = cursor.get_u32();
+        let filter_index_offset = cursor.get_u32();
+        let block_size = cursor.get_u32();
 
         // get the block meta and decode
         cursor
-            .seek(SeekFrom::Start(meta_offset))
+            .seek(SeekFrom::Start(meta_offset as u64))
             .expect("[SsTable::open] fail to seek meta block, the file is too small");
         // let block_meta_cursor = cursor.by_ref().take(file_size - 8 - meta_offset as usize);
         let mut block_meta_buffer: Vec<u8> = Vec::new();
-        block_meta_buffer.resize(file_size - 8 - meta_offset as usize, 0);
+        block_meta_buffer.resize(filter_index_offset as usize - meta_offset as usize, 0);
         cursor
             .read_exact(&mut block_meta_buffer)
             .expect("[SsTable::open] fail to read the block meta from the file");
         let block_metas = BlockMeta::decode_block_meta(Bytes::from(block_meta_buffer));
-        // let block_metas = BlockMeta::decode_block_meta(block_meta_cursor);
+
+        // get the filter index and decode
+        cursor
+            .seek(SeekFrom::Start(filter_index_offset as u64))
+            .expect("[SsTable::open] fail to seek the filter index block");
+        let mut filter_index_buffer: Vec<u8> = Vec::new();
+        filter_index_buffer.resize(file_size - 12 - filter_index_offset as usize, 0);
+        cursor
+            .read_exact(&mut filter_index_buffer)
+            .expect("[SsTable::open] fail to read the filter index block from file");
+        let mut filter_index_blocks = FilterIndex::decode_filter_index(filter_index_buffer);
+
+        // decode the filter according to the filter index blocks
+        let mut filters = Vec::new();
+        let mut filter_block_offset = meta_offset;
+        filters.reserve(filter_index_blocks.len());
+        filter_index_blocks.push((file_size - 12) as u32);
+
+        for (id, offset) in filter_index_blocks.iter().enumerate() {
+            if id == 0 {
+                filter_block_offset = *offset;
+                continue;
+            }
+            let mut filter_block_buffer: Vec<u8> = Vec::new();
+            let prev_offset = filter_index_blocks[id - 1];
+            filter_block_buffer.reserve((offset - filter_index_blocks[id - 1]) as usize);
+            cursor
+                .seek(SeekFrom::Start(prev_offset as u64))
+                .expect("[SsTable::open] fail to seek the filter block from the file");
+            cursor
+                .read_exact(&mut filter_block_buffer)
+                .expect("[SsTable::open] fail to read the filter index block from the file");
+            filters.push(Filter::decode(
+                &filter_block_buffer,
+                (block_size / 32) as usize,
+            ));
+        }
 
         Ok(Self {
             file,
             block_metas,
-            block_meta_offset: meta_offset as usize,
+            filters,
+            block_meta_offset: meta_offset,
+            filter_index_offset,
+            filter_block_offset,
             block_cache,
             sst_id: id,
         })
@@ -179,7 +256,8 @@ impl SsTable {
         let block_offset = self.block_metas[block_idx].offset;
         let block_first_key = &self.block_metas[block_idx].first_key;
 
-        let mut block_size = (self.block_meta_offset - self.block_metas[block_idx].offset) as u64;
+        let mut block_size =
+            (self.filter_block_offset as usize - self.block_metas[block_idx].offset) as u64;
         if block_idx < self.block_metas.len() - 1 {
             block_size = (self.block_metas[block_idx + 1].offset
                 - self.block_metas[block_idx].offset) as u64;

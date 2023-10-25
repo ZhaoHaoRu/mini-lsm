@@ -34,6 +34,7 @@ impl Block {
             offsets: vec![],
         }
     }
+
     /// Encode the internal data to the data layout illustrated in the tutorial
     /// Note: You may want to recheck if any of the expected field is missing from your output
     pub fn encode(&self) -> Bytes {
@@ -101,5 +102,6 @@ impl Block {
     }
 }
 
+pub mod filter;
 #[cfg(test)]
 mod tests;

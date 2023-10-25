@@ -38,7 +38,7 @@ fn generate_block() -> Block {
         let value = value_of(idx);
         assert!(builder.add(&key[..], &value[..]));
     }
-    builder.build()
+    builder.build().0
 }
 
 #[test]

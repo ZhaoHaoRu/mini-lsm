@@ -2,11 +2,12 @@ use std::mem;
 use std::path::Path;
 use std::sync::Arc;
 
+use crate::block::filter::Filter;
 use crate::block::{Block, BlockBuilder};
 use anyhow::Result;
 use bytes::{BufMut, Bytes};
 
-use super::{BlockMeta, SsTable};
+use super::{BlockMeta, FilterIndex, SsTable};
 use crate::lsm_storage::BlockCache;
 use crate::table::FileObject;
 
@@ -16,7 +17,9 @@ pub struct SsTableBuilder {
     // Add other fields you need.
     block_builder: BlockBuilder,
     block_section: Vec<Block>,
+    filter_section: Vec<Filter>,
     data_block_offset: usize,
+    filter_block_offset: usize,
     block_size: usize,
 }
 
@@ -25,9 +28,11 @@ impl SsTableBuilder {
     pub fn new(block_size: usize) -> Self {
         Self {
             data_block_offset: 0,
+            filter_block_offset: 0,
             meta: vec![],
             block_builder: BlockBuilder::new(block_size),
             block_section: vec![],
+            filter_section: vec![],
             block_size,
         }
     }
@@ -35,7 +40,9 @@ impl SsTableBuilder {
     /// Serialize the current block
     fn serialize_block(&mut self, prev_block_builder: BlockBuilder) {
         let block_size = prev_block_builder.get_size();
-        self.block_section.push(prev_block_builder.build());
+        let (block, filter) = prev_block_builder.build();
+        self.block_section.push(block);
+        self.filter_section.push(filter);
         let block_count = self.block_section.len();
         self.data_block_offset += block_size + 2;
     }
@@ -79,6 +86,7 @@ impl SsTableBuilder {
     ) -> Result<SsTable> {
         // generate the file data to write to disk
         let mut data: Vec<u8> = Vec::new();
+        let mut last_filter: Option<Filter> = None;
         // data section
         data.reserve(self.data_block_offset);
         for block in &self.block_section {
@@ -86,15 +94,43 @@ impl SsTableBuilder {
         }
         // if the last data block is not serialized, not forget to handle it
         if self.block_builder.get_size() > 0 {
-            data.extend_from_slice(&self.block_builder.build().encode());
+            let (block, filter) = self.block_builder.build();
+            data.extend_from_slice(&block.encode());
+            last_filter = Some(filter)
         }
 
-        let meta_offset = data.len();
+        // filter section
+        let mut filer_index_block: Vec<u32> = Vec::new();
+        let filter_block_offset = data.len() as u32;
+        filer_index_block.reserve(self.filter_section.len());
+        for filter in &self.filter_section {
+            filer_index_block.push(data.len() as u32);
+            data.extend_from_slice(&filter.encode());
+        }
+        if let Some(filter) = last_filter {
+            filer_index_block.push(data.len() as u32);
+            data.extend_from_slice(&filter.encode());
+        }
+
+        let meta_offset = data.len() as u32;
         // meta block
         BlockMeta::encode_block_meta(&self.meta, &mut data);
-        // the offset of meta block
-        let offset_slices: [u8; 8] = meta_offset.to_be_bytes();
+
+        let filter_offset = data.len() as u32;
+        // filter index block
+        FilterIndex::encode_filter_index(&filer_index_block, &mut data);
+
+        // put the offset of meta block
+        let offset_slices: [u8; 4] = meta_offset.to_be_bytes();
         data.put_slice(&offset_slices);
+
+        // put the offset of filter index block
+        let filter_offset_slices: [u8; 4] = filter_offset.to_be_bytes();
+        data.put_slice(&filter_offset_slices);
+
+        // put the block size
+        let block_size_slice: [u8; 4] = (self.block_size as u32).to_be_bytes();
+        data.put_slice(&block_size_slice);
 
         // make the data persistent
         let file = FileObject::create(path.as_ref(), data)?;
@@ -104,8 +140,11 @@ impl SsTableBuilder {
             file,
             block_metas: self.meta,
             block_meta_offset: meta_offset,
+            filter_index_offset: filter_offset,
+            filter_block_offset,
             block_cache,
             sst_id: id,
+            filters: self.filter_section,
         })
     }
 

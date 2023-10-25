@@ -75,7 +75,7 @@ fn test_sst_iterator() {
     let (_dir, sst) = generate_sst();
     let sst = Arc::new(sst);
     let mut iter = SsTableIterator::create_and_seek_to_first(sst).unwrap();
-    for _ in 0..5 {
+    for j in 0..5 {
         for i in 0..num_of_keys() {
             let key = iter.key();
             let value = iter.value();
