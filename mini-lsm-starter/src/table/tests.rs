@@ -122,9 +122,9 @@ fn test_sst_seek_key() {
                 as_bytes(&value_of(i)),
                 as_bytes(value)
             );
-            iter.seek_to_key(&format!("key_{:03}", i * 5 + offset).into_bytes())
+            iter.seek_to_key(&format!("key_{:03}", i * 5 + offset).into_bytes(), false)
                 .unwrap();
         }
-        iter.seek_to_key(b"k").unwrap();
+        iter.seek_to_key(b"k", false).unwrap();
     }
 }

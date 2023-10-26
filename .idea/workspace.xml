@@ -8,17 +8,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="update day4">
-      <change afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block/filter.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/block.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/block/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block/builder.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/block/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block/tests.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lib.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/tests.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -86,6 +81,8 @@
     "Cargo.Test table::tests::test_sst_build_single_key.executor": "Run",
     "Cargo.Test table::tests::test_sst_build_two_blocks.executor": "Run",
     "Cargo.Test table::tests::test_sst_decode.executor": "Debug",
+    "Cargo.Test table::tests::test_sst_iterator.executor": "Run",
+    "Cargo.Test table::tests::test_sst_seek_key.executor": "Run",
     "Cargo.Test tests::compaction_compile_test.executor": "Run",
     "Cargo.Test tests::day4_tests::test_storage_get.executor": "Run",
     "Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor": "Run",
@@ -121,7 +118,7 @@
       <recent name="$PROJECT_DIR$/mini-lsm-starter/" />
     </key>
   </component>
-  <component name="RunManager" selected="Cargo.Test table::tests::test_sst_iterator">
+  <component name="RunManager" selected="Cargo.Test table::tests::test_sst_seek_key">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
       <option name="command" value="run" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -141,23 +138,6 @@
     </configuration>
     <configuration name="Test table::tests::test_sst_build_all" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_build_all -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test table::tests::test_sst_build_single_key" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_build_single_key -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -224,6 +204,23 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Test table::tests::test_sst_seek_key" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_seek_key -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="Test tests::compaction_compile_test" type="CargoCommandRunConfiguration" factoryName="Cargo Command">
       <option name="command" value="test --package mini-lsm-starter --lib tests::Compaction::compile_test -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
@@ -245,18 +242,18 @@
       <item itemvalue="Cargo.Run" />
       <item itemvalue="Cargo.Test tests::compaction_compile_test" />
       <item itemvalue="Cargo.Test table::tests::test_sst_build_all" />
-      <item itemvalue="Cargo.Test table::tests::test_sst_build_single_key" />
       <item itemvalue="Cargo.Test table::tests::test_sst_build_two_blocks" />
       <item itemvalue="Cargo.Test table::tests::test_sst_decode" />
       <item itemvalue="Cargo.Test table::tests::test_sst_iterator" />
+      <item itemvalue="Cargo.Test table::tests::test_sst_seek_key" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Cargo.Test table::tests::test_sst_seek_key" />
         <item itemvalue="Cargo.Test table::tests::test_sst_iterator" />
         <item itemvalue="Cargo.Test table::tests::test_sst_decode" />
         <item itemvalue="Cargo.Test table::tests::test_sst_build_all" />
         <item itemvalue="Cargo.Test table::tests::test_sst_build_two_blocks" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_build_single_key" />
       </list>
     </recent_temporary>
   </component>
@@ -284,7 +281,7 @@
       <workItem from="1698023496925" duration="20251000" />
       <workItem from="1698111126262" duration="2831000" />
       <workItem from="1698113976624" duration="7378000" />
-      <workItem from="1698126707470" duration="29858000" />
+      <workItem from="1698126707470" duration="34133000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
@@ -342,15 +339,25 @@
           <line>25</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
-        <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table.rs</url>
+          <line>175</line>
+          <option name="timeStamp" value="138" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
-          <line>147</line>
-          <option name="timeStamp" value="49" />
+          <line>173</line>
+          <option name="timeStamp" value="140" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table.rs</url>
-          <line>173</line>
-          <option name="timeStamp" value="138" />
+          <line>249</line>
+          <option name="timeStamp" value="142" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
+          <line>107</line>
+          <option name="timeStamp" value="145" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -60,11 +60,27 @@ impl SsTableIterator {
             idx: 0,
         };
 
-        match iterator.seek_to_key(key) {
+        match iterator.seek_to_key(key, false) {
             Ok(()) => Ok(iterator),
             Err(err) => Err(err),
         }
     }
+
+    /// Create a new iterator and seek for a particular key that equal to `key`
+    pub fn create_and_find_target_key(table: Arc<SsTable>, key: &[u8]) -> Result<Self> {
+        let mut iterator = Self {
+            table,
+            block_iterator: BlockIterator::new(Arc::new(Block::new())),
+            idx: 0,
+        };
+
+        match iterator.seek_to_key(key, true) {
+            Ok(()) => Ok(iterator),
+            Err(err) => Err(err),
+        }
+    }
+
+    /// Seek to the first key-value pair equal to `key`.
 
     /// Find the block that probably has the target key
     fn locate_block_by_key(&mut self, key: &Bytes) -> usize {
@@ -84,9 +100,9 @@ impl SsTableIterator {
         }
     }
 
-    /// Seek to the first key-value pair which >= `key`.
+    /// Seek to the first key-value pair which >= `key` or equal to `key`
     /// Note: You probably want to review the handout for detailed explanation when implementing this function.
-    pub fn seek_to_key(&mut self, key: &[u8]) -> Result<()> {
+    pub fn seek_to_key(&mut self, key: &[u8], is_precise: bool) -> Result<()> {
         let block_index = self.locate_block_by_key(&Bytes::copy_from_slice(key));
         if block_index >= self.table.block_metas.len() {
             self.block_iterator = BlockIterator::new(Arc::new(Block::new()));
@@ -98,6 +114,16 @@ impl SsTableIterator {
             .table
             .read_block_cached(block_index)
             .expect("[SsTableIterator::seek_to_key] read block fail");
+
+        // use filter block to check
+        if !self.table.filters[block_index].is_exist(key) {
+            // the target is to find the particular key, and the key is not exist
+            if is_precise {
+                self.block_iterator = BlockIterator::new(Arc::new(Block::new()));
+                return Ok(());
+            }
+        }
+
         self.block_iterator = BlockIterator::create_and_seek_to_key(candidate_block, key);
         // make sure there is actually some key bigger than the target key
         if self.block_iterator.is_valid() && self.block_iterator.key() >= key {

@@ -98,7 +98,7 @@ impl LsmStorage {
         }
 
         let search_in_sst = |table: Arc<SsTable>| -> Result<Option<Bytes>> {
-            if let Ok(ss_table_iter) = SsTableIterator::create_and_seek_to_key(table, key) {
+            if let Ok(ss_table_iter) = SsTableIterator::create_and_find_target_key(table, key) {
                 if ss_table_iter.is_valid() && ss_table_iter.key() == key {
                     if ss_table_iter.value().is_empty() {
                         return Ok(None);

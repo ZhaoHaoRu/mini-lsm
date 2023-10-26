@@ -103,13 +103,15 @@ impl SsTableBuilder {
         let mut filer_index_block: Vec<u32> = Vec::new();
         let filter_block_offset = data.len() as u32;
         filer_index_block.reserve(self.filter_section.len());
-        for filter in &self.filter_section {
+        let mut new_filters = self.filter_section;
+        for filter in &new_filters {
             filer_index_block.push(data.len() as u32);
             data.extend_from_slice(&filter.encode());
         }
         if let Some(filter) = last_filter {
             filer_index_block.push(data.len() as u32);
             data.extend_from_slice(&filter.encode());
+            new_filters.push(filter);
         }
 
         let meta_offset = data.len() as u32;
@@ -144,7 +146,7 @@ impl SsTableBuilder {
             filter_block_offset,
             block_cache,
             sst_id: id,
-            filters: self.filter_section,
+            filters: new_filters,
         })
     }
 
