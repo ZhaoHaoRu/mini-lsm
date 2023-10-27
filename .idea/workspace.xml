@@ -8,12 +8,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="update day4">
+      <change afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log/builder.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log/iterator.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log/reader.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/compaction.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/builder.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/block/iterator.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lib.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lib.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table/tests.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table/tests.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,69 +50,69 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Cargo.Test block::filter::tests::test_filter.executor": "Run",
-    "Cargo.Test block::tests::test_block_build_all.executor": "Run",
-    "Cargo.Test block::tests::test_block_build_full.executor": "Run",
-    "Cargo.Test block::tests::test_block_build_single_key.executor": "Run",
-    "Cargo.Test block::tests::test_block_decode.executor": "Run",
-    "Cargo.Test block::tests::test_block_encode.executor": "Run",
-    "Cargo.Test block::tests::test_block_iterator.executor": "Run",
-    "Cargo.Test block::tests::test_block_seek_key.executor": "Run",
-    "Cargo.Test compaction::tests.executor": "Run",
-    "Cargo.Test compaction::tests::compile_test.executor": "Run",
-    "Cargo.Test compaction::tests::test_compile.executor": "Run",
-    "Cargo.Test compaction::tests::test_get_overlapped_range.executor": "Run",
-    "Cargo.Test compaction::tests::test_get_required_key_range.executor": "Run",
-    "Cargo.Test compaction::tests::test_merge.executor": "Run",
-    "Cargo.Test compaction::tests::test_merge_micro.executor": "Run",
-    "Cargo.Test compaction::tests::test_merge_more_complicated.executor": "Run",
-    "Cargo.Test compaction::tests::test_pick_compaction.executor": "Run",
-    "Cargo.Test compaction::tests::test_uninstall_and_install_file.executor": "Run",
-    "Cargo.Test compaction_tests.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_1.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_2.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_empty.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor": "Run",
-    "Cargo.Test table::tests.executor": "Run",
-    "Cargo.Test table::tests::test_sst_build_all.executor": "Run",
-    "Cargo.Test table::tests::test_sst_build_single_key.executor": "Run",
-    "Cargo.Test table::tests::test_sst_build_two_blocks.executor": "Run",
-    "Cargo.Test table::tests::test_sst_decode.executor": "Debug",
-    "Cargo.Test table::tests::test_sst_iterator.executor": "Run",
-    "Cargo.Test table::tests::test_sst_seek_key.executor": "Run",
-    "Cargo.Test tests::compaction_compile_test.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_get.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_after_compaction.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_2.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync.executor": "Run",
-    "Cargo.Test two_merge_iterator_test.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "develop",
-    "last_opened_file_path": "/Users/zhaohaoru/rust_project/mini-lsm",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs": "true",
-    "settings.editor.selected.configurable": "language.rust.cargo.check",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Cargo.Test block::filter::tests::test_filter.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_build_all.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_build_full.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_build_single_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_decode.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_encode.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_iterator.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_seek_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::compile_test.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_compile.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_get_overlapped_range.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_get_required_key_range.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_merge.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_merge_micro.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_merge_more_complicated.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_pick_compaction.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_uninstall_and_install_file.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction_tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_empty.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_build_all.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_build_single_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_build_two_blocks.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_decode.executor&quot;: &quot;Debug&quot;,
+    &quot;Cargo.Test table::tests::test_sst_iterator.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_seek_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::compaction_compile_test.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_get.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_after_compaction.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test two_merge_iterator_test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/zhaohaoru/rust_project/mini-lsm&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.cargo.check&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/mini-lsm-starter/src/block" />
@@ -281,7 +284,8 @@
       <workItem from="1698023496925" duration="20251000" />
       <workItem from="1698111126262" duration="2831000" />
       <workItem from="1698113976624" duration="7378000" />
-      <workItem from="1698126707470" duration="34133000" />
+      <workItem from="1698126707470" duration="42184000" />
+      <workItem from="1698301921094" duration="15140000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
@@ -336,7 +340,7 @@
         </line-breakpoint>
         <line-breakpoint type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
-          <line>25</line>
+          <line>22</line>
           <option name="timeStamp" value="39" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
@@ -345,19 +349,9 @@
           <option name="timeStamp" value="138" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
-          <line>173</line>
-          <option name="timeStamp" value="140" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table.rs</url>
           <line>249</line>
           <option name="timeStamp" value="142" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
-          <line>107</line>
-          <option name="timeStamp" value="145" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
