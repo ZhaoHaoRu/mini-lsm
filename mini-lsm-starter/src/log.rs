@@ -7,42 +7,6 @@ use std::sync::Arc;
 use anyhow::{Result, Error};
 use bytes::BufMut;
 
-pub struct RecordData {}
-
-impl RecordData {
-    /// encode the log record data from command content
-    pub fn encode(key: &[u8], value: &[u8]) -> Vec<u8> {
-        let key_len = key.len();
-        let value_len = value.len();
-        let mut result = Vec::new();
-        let data_len = 4 + key_len + value_len;
-        result.reserve(data_len);
-        let key_len_slice: [u8; 2] = (key_len as u16).to_be_bytes();
-        result.extend_from_slice(&key_len_slice);
-        result.copy_from_slice(key);
-        result.copy_from_slice(value);
-        assert_eq!(data_len, result.len());
-        result
-    }
-
-    /// decode the log record data from raw
-    pub fn decode(data: &[u8]) -> Result<(Vec<u8>, Vec<u8>)> {
-        let data_len = data.len();
-        if data_len < 4 {
-            return Err(Error::msg("[RecordData::decode] the data for decoding is to short"));
-        }
-        let key_len = ((data[0] as u16) << 8) | (data[1] as u16);
-        let value_len = ((data[2] as u16) << 8) | (data[3] as u16);
-        if key_len + value_len + 4 < data_len as u16 {
-            return Err(Error::msg("[RecordData::decode] the data for decoding is to short"));
-        }
-
-        let key : Vec<u8> = Vec::from(&data[4..4+(key_len as usize)]);
-        let value : Vec<u8> = Vec::from(&data[(4+key_len as usize)..((4+key_len+value_len) as usize)]);
-        Ok((key, value))
-    }
-}
-
 /**
  * the log record format:
  * -----------------------------------------------------------
@@ -73,8 +37,8 @@ impl LogRecord {
         result.extend_from_slice(&length_slices);
         let key_len_slice: [u8; 2] = (key_len as u16).to_be_bytes();
         result.extend_from_slice(&key_len_slice);
-        result.copy_from_slice(key);
-        result.copy_from_slice(value);
+        result.extend_from_slice(key);
+        result.extend_from_slice(value);
         assert_eq!(4 + key_len + value_len, result.len());
         result
     }
@@ -83,19 +47,20 @@ impl LogRecord {
     pub fn decode(data: &[u8]) -> Result<(Self, usize)> {
         let data_len = data.len();
         if data_len < 4 {
-            return Err(Error::msg("[LogRecord::decode] the data for decoding is to short"));
+            return Err(Error::msg("[LogRecord::decode] the data for decoding is to short, data_len is too short"));
         }
         let record_len = (((data[0] as u16) << 8) | (data[1] as u16)) as usize;
         if 2 + record_len > data_len {
-            return Err(Error::msg("[LogRecord::decode] the data for decoding is to short"));
+            return Err(Error::msg("[LogRecord::decode] the data for decoding is to short, record_len is too long"));
         }
         let key_len = ((data[2] as u16) << 8) | (data[3] as u16);
-        if ((4 + key_len) as usize) < data_len {
-            return Err(Error::msg("[LogRecord::decode] the data for decoding is to short"));
+        if ((4 + key_len) as usize) > data_len {
+            return Err(Error::msg("[LogRecord::decode] the data for decoding is to short, key_len is too long"));
         }
 
         let key : Vec<u8> = Vec::from(&data[4..4+(key_len as usize)]);
-        let value : Vec<u8> = Vec::from(&data[(4+key_len as usize)..(record_len as usize)]);
+        let value : Vec<u8> = Vec::from(&data[(4+key_len as usize)..(record_len + 2)]);
+        assert_eq!(record_len, 2 + key_len as usize + value.len());
         Ok((Self {
             key,
             value,
@@ -142,5 +107,57 @@ impl LogBlock {
             input = &input[offset..];
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use bytes::BufMut;
+    use crate::log::{LogBlock, LogRecord};
+    use crate::tests::utils::{key_of, value_of};
+
+    #[test]
+    fn test_log_record() {
+        let mut middle_storage = vec![];
+        for i in 1..=100 {
+            let key = key_of(i);
+            let value = value_of(i);
+            let record = LogRecord::encode(&key, &value);
+            middle_storage.push(record);
+        }
+        for i in 1..=100 {
+            let key = key_of(i);
+            let value = value_of(i);
+            let (record, offset) = LogRecord::decode(&middle_storage[i - 1]).unwrap();
+            assert_eq!(offset, 4 + key.len() + value.len());
+            assert_eq!(String::from_utf8(record.key).unwrap(), String::from_utf8(key).unwrap());
+            assert_eq!(String::from_utf8(record.value).unwrap(), String::from_utf8(value).unwrap());
+        }
+    }
+
+    #[test]
+    fn test_log_block() {
+        let mut middle_storage = Vec::new();
+        let mut log_block = LogBlock::new(100);
+        for i in 1..=100 {
+            let key = key_of(i);
+            let value = value_of(i);
+            let need_flush = log_block.add(&key, &value).unwrap();
+            if need_flush {
+                let data = log_block.encode();
+                middle_storage.put_slice(&data);
+                log_block = LogBlock::new(100);
+            }
+        }
+        let data = log_block.encode();
+        middle_storage.put_slice(&data);
+        let records = LogBlock::decode(&middle_storage);
+
+        for i in 1..=100 {
+            let key = key_of(i);
+            let value = value_of(i);
+            assert_eq!(String::from_utf8(records[i - 1].key.clone()).unwrap(), String::from_utf8(key).unwrap());
+            assert_eq!(String::from_utf8(records[i - 1].value.clone()).unwrap(), String::from_utf8(value).unwrap());
+        }
     }
 }
