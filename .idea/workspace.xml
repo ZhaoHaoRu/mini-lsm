@@ -9,8 +9,9 @@
   <component name="ChangeListManager">
     <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="update day4">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/log.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/log/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log/builder.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/log/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log/iterator.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -73,7 +74,9 @@
     "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor": "Run",
     "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor": "Run",
     "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor": "Run",
-    "Cargo.Test log::tests::test_log_block.executor": "Debug",
+    "Cargo.Test log::builder::tests::test_log_builder.executor": "Run",
+    "Cargo.Test log::builder::tests::test_writable_file.executor": "Run",
+    "Cargo.Test log::tests::test_log_block.executor": "Run",
     "Cargo.Test log::tests::test_log_record.executor": "Run",
     "Cargo.Test table::tests.executor": "Run",
     "Cargo.Test table::tests::test_sst_build_all.executor": "Run",
@@ -117,9 +120,43 @@
       <recent name="$PROJECT_DIR$/mini-lsm-starter/" />
     </key>
   </component>
-  <component name="RunManager" selected="Cargo.Test log::tests::test_log_block">
+  <component name="RunManager" selected="Cargo.Test log::builder::tests::test_log_builder">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
       <option name="command" value="run" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test log::builder::tests::test_log_builder" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib log::builder::tests::test_log_builder -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test log::builder::tests::test_writable_file" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib log::builder::tests::test_writable_file -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -154,40 +191,6 @@
     </configuration>
     <configuration name="Test log::tests::test_log_record" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
       <option name="command" value="test --package mini-lsm-starter --lib log::tests::test_log_record -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test table::tests::test_sst_decode" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_decode -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test table::tests::test_sst_iterator" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_iterator -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -240,19 +243,19 @@
     <list>
       <item itemvalue="Cargo.Run" />
       <item itemvalue="Cargo.Test tests::compaction_compile_test" />
+      <item itemvalue="Cargo.Test log::builder::tests::test_log_builder" />
+      <item itemvalue="Cargo.Test log::builder::tests::test_writable_file" />
       <item itemvalue="Cargo.Test log::tests::test_log_block" />
       <item itemvalue="Cargo.Test log::tests::test_log_record" />
-      <item itemvalue="Cargo.Test table::tests::test_sst_decode" />
-      <item itemvalue="Cargo.Test table::tests::test_sst_iterator" />
       <item itemvalue="Cargo.Test table::tests::test_sst_seek_key" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Cargo.Test log::builder::tests::test_log_builder" />
+        <item itemvalue="Cargo.Test log::builder::tests::test_writable_file" />
         <item itemvalue="Cargo.Test log::tests::test_log_block" />
         <item itemvalue="Cargo.Test log::tests::test_log_record" />
         <item itemvalue="Cargo.Test table::tests::test_sst_seek_key" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_iterator" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_decode" />
       </list>
     </recent_temporary>
   </component>
@@ -281,7 +284,7 @@
       <workItem from="1698111126262" duration="2831000" />
       <workItem from="1698113976624" duration="7378000" />
       <workItem from="1698126707470" duration="42184000" />
-      <workItem from="1698301921094" duration="19560000" />
+      <workItem from="1698301921094" duration="32296000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
@@ -338,31 +341,6 @@
           <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table/iterator.rs</url>
           <line>22</line>
           <option name="timeStamp" value="39" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table.rs</url>
-          <line>175</line>
-          <option name="timeStamp" value="138" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/table.rs</url>
-          <line>249</line>
-          <option name="timeStamp" value="142" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/log.rs</url>
-          <line>47</line>
-          <option name="timeStamp" value="147" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/log.rs</url>
-          <line>153</line>
-          <option name="timeStamp" value="149" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
-          <url>file://$PROJECT_DIR$/mini-lsm-starter/src/log.rs</url>
-          <line>102</line>
-          <option name="timeStamp" value="150" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -4,13 +4,12 @@
 mod builder;
 mod iterator;
 
-use anyhow::Error;
 use std::fs::File;
 use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::sync::Arc;
 
-use anyhow::Result;
+use anyhow::{Result, Error};
 pub use builder::SsTableBuilder;
 use bytes::{Buf, BufMut, Bytes};
 pub use iterator::SsTableIterator;

@@ -62,3 +62,4 @@ impl StorageIterator for LogIterator {
         Ok(())
     }
 }
+
