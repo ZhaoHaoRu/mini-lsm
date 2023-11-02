@@ -1,6 +1,7 @@
 mod iterator;
 mod builder;
 mod reader;
+mod tests;
 
 use std::mem;
 use std::sync::Arc;
@@ -111,7 +112,7 @@ impl LogBlock {
 }
 
 #[cfg(test)]
-mod tests {
+mod log_tests {
     use bytes::BufMut;
     use crate::log::{LogBlock, LogRecord};
     use crate::tests::utils::{key_of, value_of};

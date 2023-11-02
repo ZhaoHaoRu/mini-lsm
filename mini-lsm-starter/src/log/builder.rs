@@ -85,7 +85,8 @@ pub struct LogBuilder {
 
 impl LogBuilder {
     /// clear current log block and sync the log file
-    fn sync_cur_log_file(&mut self) -> Result<()> {
+    // NOTE: make public for test
+    pub fn sync_cur_log_file(&mut self) -> Result<()> {
         // replace current log block with a new log block
         let mut old_block = std::mem::replace(&mut self.cur_log_block, LogBlock::new(self.log_block_max_size));
         // add the log block to file and flush

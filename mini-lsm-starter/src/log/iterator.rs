@@ -16,24 +16,16 @@ pub struct LogIterator {
 }
 
 impl LogIterator {
-    pub fn create(path: &Path) -> Self {
+    pub fn create(path: &Path) -> Result<Self> {
         // open the file and write the content
-        let mut file = File::open(path).unwrap_or_else(|_| {
-            panic!(
-                "{}",
-                &format!(
-                    "[FileObject::open] open file with path {} fail",
-                    path.to_str().unwrap()
-                )
-            )
-        });
+        let mut file = File::open(path)?;
         let mut buffer = Vec::new();
         file.read_to_end(&mut buffer).expect("[LogIterator::create] read file fail");
         let logs = LogBlock::decode(&buffer[..]);
-        Self{
+        Ok(Self{
             logs,
             idx: 0
-        }
+        })
     }
 }
 
