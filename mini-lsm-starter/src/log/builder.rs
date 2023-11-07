@@ -1,8 +1,10 @@
+use std::fs;
 use std::fs::File;
 use std::io::{Write};
 use std::path::{Path, PathBuf};
 
 use anyhow::{Error, Result};
+use log::debug;
 use tempfile::NamedTempFile;
 use crate::log::LogBlock;
 
@@ -111,12 +113,12 @@ impl LogBuilder {
         };
         let file_path = instance.generate_file_path();
         instance.dest_file = WritableFile::new(&file_path);
-        instance.log_file_id += 1;
         instance
     }
 
     /// Replace the dest file with a new file
     pub fn replace_dest(&mut self) -> Result<()> {
+        self.log_file_id += 1;
         let file_path = self.generate_file_path();
         // clear current file
         self.sync_cur_log_file()?;
@@ -137,6 +139,20 @@ impl LogBuilder {
             }
         }
         Ok(())
+    }
+
+    /// Get current log file id
+    pub fn get_cur_log_file_id(&self) -> usize {
+        self.log_file_id
+    }
+
+    /// Remove the stale log file
+    pub fn remove_stale_log_file(path: &Path, file_id: usize) {
+        let log_file_path = path.join(file_id.to_string() + ".log");
+        if !log_file_path.exists() {
+            debug!("[LogBuilder::remove_stale_log_file] the log file not exist");
+        }
+        fs::remove_file(log_file_path).expect("[LogBuilder::remove_stale_log_file] remove file fail");
     }
 }
 

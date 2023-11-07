@@ -119,3 +119,9 @@ LAST == 4: 记录的内容起始位置不在本block，但 结束位置在本blo
 ```
 
 - 每个memtable / immutable memtable对应一个log file，log file的名字编号越大，对应的log越新
+
+#### manifest
+- log_number_：最小的有效 log number。小于 log_numbers_ 的 log 文件都可以删除。
+- next_file_number_：下一个文件的编号 (file_number_)。
+- 这里要求memtable的log number和其对应的sst文件的编号相同
+- 在每次sync和compaction结束后，都需要更新manifest文件

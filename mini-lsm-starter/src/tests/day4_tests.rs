@@ -1,3 +1,4 @@
+use std::env;
 use std::ops::Bound;
 
 use bytes::Bytes;
@@ -33,6 +34,22 @@ fn check_iter_result(iter: impl StorageIterator, expected: Vec<(Bytes, Bytes)>) 
         iter.next().unwrap();
     }
     assert!(!iter.is_valid());
+}
+
+fn wal_log_test_setup() {
+    let log_dir_path = env::current_dir().unwrap().join("test_data");
+    if log_dir_path.exists() {
+        let entries = std::fs::read_dir(&log_dir_path).unwrap();
+        for entry in entries {
+            let entry = entry.unwrap();
+            let path = entry.path();
+            if path.is_file() {
+                std::fs::remove_file(&path).unwrap();
+            }
+        }
+    } else {
+        std::fs::create_dir(&log_dir_path).unwrap();
+    }
 }
 
 #[test]
@@ -190,6 +207,7 @@ fn test_storage_scan_memtable_2_after_sync() {
 }
 
 #[test]
+/// too much file writing, need to run for a long time
 fn test_storage_scan_after_compaction() {
     use crate::lsm_storage::LsmStorage;
     let dir = tempdir().unwrap();
@@ -220,6 +238,7 @@ fn test_storage_scan_after_compaction() {
             .collect::<Vec<_>>(),
     );
 
+
     // check scan after update and delete
     for i in 0..2 {
         for j in 1..=1000 {
@@ -240,8 +259,9 @@ fn test_storage_scan_after_compaction() {
     }
 
     storage
-        .compaction(1)
+        .compaction(0)
         .expect("[test_storage_scan_after_compaction] compaction fail");
+
 
     check_iter_result(
         storage
@@ -259,3 +279,90 @@ fn test_storage_scan_after_compaction() {
             .collect::<Vec<_>>(),
     );
 }
+
+
+#[test]
+fn test_wal_log_with_mem_table() {
+    use crate::lsm_storage::LsmStorage;
+
+    let log_dir_path = env::current_dir().unwrap().join("test_data");
+    wal_log_test_setup();
+
+    // test log write
+    {
+        let storage = LsmStorage::open(&log_dir_path).unwrap();
+        for i in 0..10 {
+            for j in 1..=1000 {
+                storage
+                    .put(
+                        key_of(i * 1000 + j).as_slice(),
+                        value_of(i * 1000 + j).as_slice(),
+                    )
+                    .unwrap();
+            }
+        }
+        storage.sync_log_builder().unwrap();
+    }
+
+
+    // test log recovery
+    {
+        let storage = LsmStorage::open(&log_dir_path).unwrap();
+        // check scan result
+        check_iter_result(
+            storage.scan(Bound::Unbounded, Bound::Unbounded).unwrap(),
+            (1..=10000)
+                .map(|i| {
+                    let key_slice = key_of(i);
+                    let value_slice = value_of(i);
+                    (Bytes::from(key_slice), Bytes::from(value_slice))
+                })
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+
+#[test]
+fn test_wal_log_with_mem_table_and_sst() {
+    use crate::lsm_storage::LsmStorage;
+
+    let log_dir_path = env::current_dir().unwrap().join("test_data");
+    wal_log_test_setup();
+
+    // test log write
+    {
+        let storage = LsmStorage::open(&log_dir_path).unwrap();
+        for i in 0..10 {
+            for j in 1..=1000 {
+                storage
+                    .put(
+                        key_of(i * 1000 + j).as_slice(),
+                        value_of(i * 1000 + j).as_slice(),
+                    )
+                    .unwrap();
+            }
+            if i < 8 {
+                storage.sync().unwrap();
+            }
+        }
+        storage.compaction(0).expect("[test_wal_log_with_mem_table_and_sst] compaction fail");
+        storage.sync_log_builder().unwrap();
+    }
+
+    // test log and sst recovery
+    {
+        let storage = LsmStorage::open(&log_dir_path).unwrap();
+        // check scan result
+        check_iter_result(
+            storage.scan(Bound::Unbounded, Bound::Unbounded).unwrap(),
+            (1..=10000)
+                .map(|i| {
+                    let key_slice = key_of(i);
+                    let value_slice = value_of(i);
+                    (Bytes::from(key_slice), Bytes::from(value_slice))
+                })
+                .collect::<Vec<_>>(),
+        );
+    }
+}
+

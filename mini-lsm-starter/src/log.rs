@@ -1,7 +1,11 @@
 mod iterator;
-mod builder;
+pub(crate) mod builder;
 mod reader;
 mod tests;
+
+pub use iterator::LogIterator;
+pub use builder::LogBuilder;
+pub use reader::LogReader;
 
 use std::mem;
 use std::sync::Arc;
