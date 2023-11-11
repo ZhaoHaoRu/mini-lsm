@@ -20,7 +20,7 @@ cargo x book
 If you changed public API in the reference solution, you might also need to synchronize it to the starter crate.
 To do this, use `cargo x sync`.
 
-## Progress
+## Tutorial Progress
 
 The tutorial has 8 parts (which can be finished in 7 days):
 
@@ -34,92 +34,16 @@ The tutorial has 8 parts (which can be finished in 7 days):
 * Day 6: Recovery. We will implement WAL and manifest so that the engine can recover after restart.
 * Day 7: Bloom filter and key compression. They are widely-used optimizations in LSM tree structures.
 
-We have reference solution up to day 4 and tutorial up to day 4 for now.
+The tutorial has reference solution up to day 4 and tutorial up to day 4 for now.
 
-### compaction
+## My Progress
 
-目前实现了leveled compaction策略
+I have tried to design and complete day5-7 by myself, including:
 
-#### SSTable结构
+* compaction
+* recovery
+* bloom filter
 
-- 每个SSTable文件的固定大小为256M，从ImmutableMemTable创建的SSTable文件flush到Level-0中
+Please check `mini-lsm-book/src` for implementation details.
 
-- 每个Level有SSTable文件数量的限制。在除了Level-0的任意Level中，两级Level之间的SSTable文件数量呈指数级倍数。比如：Level-1中有10个SSTable文件，Level-2有100个SSTable文件
-
-- 在除了Level-0的任意Level中，SSTable文件之间所包含的key的范围不重叠。（也就是说，每个Level的所有SSTable文件，可以看做是一个大的SSTable文件）
-
-#### compaction算法
-
-- 如果Level-0中SSTable数量超过限制（目前限制的是4），那么自动回将这4个Level-0的SSTable文件与Level-1的所有在范围中的n个SSTable文件进行Compaction。
-
-- 在Compaction过程中，首先对参与compaction的SSTable文件按key进行归并排序，然后将排序后结果写入到新的SSTable文件中，如果SSTable文件大小到了256M上限，就新生成SSTable继续写。如此类推，直到写完所有数据。
-
-- 删除参与Compaction的Level-0的4个和Level-1的n个旧的SSTable文件 此时Level-0的SSTable便merge到Level-1中了，那么如果Level-1的SSTable文件数量超过上限，那么就从Level-1中选出 n 个超量的最新的SSTable文件，然后将其与Level-2中的SSTable文件进行Compaction。
-
-- 查看选出的Level-1 SSTable文件中key的范围，从Level-2中选出能覆盖该范围的所有SSTable文件
-
-- 将以上的所有SSTable文件根据上面介绍的算法继续进行Compaction
-
-- 对于其他层以此类推
-
-### Bloom filter
-仿照leveldb中SSTable的结构，在加入Bloom filter之后，SSTable的结构如下：
-```shell
-+-------------------------+
-|       Data Blocks       |
-+-------------------------+
-|      Filter Blocks      |
-+-------------------------+
-|       Meta Blocks       |
-+-------------------------+
-|   Filter Index Blocks   |
-+-------------------------+
-| Meta block offset (u32) |			# indicate the position of meta block
-+-------------------------+
-|Filter block offset (u32)|			# indicate the position of the filter index block
-+-------------------------+
-```
-- 其中，Filter Blocks中存储的是Bloom filter的数据，Filter Index Blocks中存储的是每个filter block的offset
-```
--------------------------------------------------------
-| offset1 (u32) | offset2 (u32) | ... | offsetN (u32) |
--------------------------------------------------------
-```
-- 为了加快SSTable中数据查询的效率，在直接查询data block中的内容之前，leveldb首先根据filter block中的过滤数据判断指定的data block中是否有需要查询的数据，若判断不存在，则无需对这个data block进行数据查找。
-，Filter Index Blocks中存储的是Bloom filter的索引，Meta Blocks中存储的是SSTable的元信息，Data Blocks中存储的是SSTable的数据。
-- 在生成SSTable的时候，会为每个data block生成一个filter block，filter block使用了`cargo.io`中[现成的crate](https://docs.rs/bloomfilter/latest/bloomfilter/struct.Bloom.html)。
-  - 每个filter block的大小为一个data block大小的 1/32
-
-## WAL log
-
-## Log format
-
-- 这里参考了leveldb log的格式，log文件由一系列record组成。record中记录的是key-value对的内容，key-value对的格式如下：
-  - 如果`value length` = 0, 说明是delete
-```
--------------------------------------------------------
-| key length (u16) | value length (u16) | key | value |
--------------------------------------------------------
-```
-
-- block是log在内存中缓存的单位，当内存中缓存的log长度大于128B时，会将log写入到磁盘中
-
-- 每个memtable / immutable memtable对应一个log file，log file的名字编号越大，对应的log越新
-
-## manifest
-- manifest文件的文件名为`manifest`
-- log_number_：最小的有效 log number。小于 log_numbers_ 的 log 文件都可以删除。
-- next_file_number_：下一个文件的编号 (file_number_)。
-- 所有sstable的sst_file_id,每个level独占一行
-- 这里要求memtable的log number和其对应的sst文件的编号相同
-- 在每次sync和compaction结束后，都需要更新manifest文件
-
-## Recovery
-- 在每次启动时，都会读取manifest文件，根据manifest文件中记录的log number和sst文件的编号:
-- 读取log文件，将其中的key-value对写入memtable中
-- 读取sst文件，恢复sstable的结构
-
-## Persistent
-- 在每次插入和删除KV之前，都会将其写入log文件
-- 在每次sync和compaction结束后，重新持久化目前的结构，将manifest文件写入磁盘
-- 在每次sync和compaction结束后，会删除删除过期的log文件
+In the future, I will try to add Integration tests and a configuration file to support parameter modification.
