@@ -45,7 +45,7 @@ pub struct LsmStorageInner {
     /// The relation between memtable/imm_memtables and log id
     log_number_records: [Vec<usize>; 2],
     /// The log builder
-    log_builder: Arc<Mutex<LogBuilder>>
+    log_builder: Arc<Mutex<LogBuilder>>,
 }
 
 impl LsmStorageInner {
@@ -63,7 +63,17 @@ impl LsmStorageInner {
         }
     }
 
-    fn create_after_crash(next_sst_id: usize, mem_table: Arc<MemTable>, imm_mem_tables: Vec<Arc<MemTable>>, l0_sstables: Vec<Arc<SsTable>>, levels: Vec<Vec<Arc<SsTable>>>, log_number_records: [Vec<usize>; 2], block_cache: Arc<BlockCache>, log_builder: LogBuilder) -> Self {
+    #[allow(clippy::too_many_arguments)]
+    fn create_after_crash(
+        next_sst_id: usize,
+        mem_table: Arc<MemTable>,
+        imm_mem_tables: Vec<Arc<MemTable>>,
+        l0_sstables: Vec<Arc<SsTable>>,
+        levels: Vec<Vec<Arc<SsTable>>>,
+        log_number_records: [Vec<usize>; 2],
+        block_cache: Arc<BlockCache>,
+        log_builder: LogBuilder,
+    ) -> Self {
         Self {
             memtable: mem_table,
             imm_memtables: imm_mem_tables,
@@ -82,27 +92,32 @@ impl LsmStorageInner {
         for row in &self.log_number_records {
             for elem in row {
                 buf.extend(elem.to_string().as_bytes());
-                buf.push(' ' as u8);
+                buf.push(b' ');
             }
-            buf.push('\n' as u8);
+            buf.push(b'\n');
         }
         for elem in &self.l0_sstables {
             buf.extend(elem.get_sst_id().to_string().as_bytes());
-            buf.push(' ' as u8);
+            buf.push(b' ');
         }
-        buf.push('\n' as u8);
+        buf.push(b'\n');
         for level in &self.levels {
             for elem in level {
                 buf.extend(elem.get_sst_id().to_string().as_bytes());
                 // buf.append(&mut elem.get_sst_id().to_string().to_vec());
-                buf.push(' ' as u8);
+                buf.push(b' ');
             }
         }
-        buf.push('\n' as u8);
+        buf.push(b'\n');
         let manifest_path = path.join("manifest.txt");
-        let mut manifest_file = File::create(manifest_path).expect("[LsmStorageInner::sync_manifest] open manifest file fail");
-        manifest_file.write(&buf).expect("[LsmStorageInner::sync_manifest] write to manifest file fail");
-        manifest_file.sync_data().expect("[LsmStorageInner::sync_manifest] sync manifest file fail");
+        let mut manifest_file = File::create(manifest_path)
+            .expect("[LsmStorageInner::sync_manifest] open manifest file fail");
+        manifest_file
+            .write_all(&buf)
+            .expect("[LsmStorageInner::sync_manifest] write to manifest file fail");
+        manifest_file
+            .sync_data()
+            .expect("[LsmStorageInner::sync_manifest] sync manifest file fail");
     }
 }
 
@@ -118,7 +133,7 @@ pub struct LsmStorage {
 impl LsmStorage {
     /// restore the mem_table or imm_mem_tables from the log file
     fn restore_memtable(log_file_id: usize, path: &Path) -> Result<Arc<MemTable>> {
-        let mut log_reader = LogReader::new(log_file_id, &path);
+        let mut log_reader = LogReader::new(log_file_id, path);
         match log_reader.read_records() {
             Ok(mut iter) => {
                 let mem_table = MemTable::create();
@@ -130,14 +145,12 @@ impl LsmStorage {
                 }
                 Ok(Arc::new(mem_table))
             }
-            Err(error) => {
-                Err(error)
-            }
+            Err(error) => Err(error),
         }
     }
 
     /// recover from the previous ss-tables and WAL log
-    fn recovery(path: &Path) -> Arc<LsmStorageInner>{
+    fn recovery(path: &Path) -> Arc<LsmStorageInner> {
         let manifest_path = path.join("manifest.txt");
         if !manifest_path.exists() {
             // the manifest file not exist, maybe the first time to create the storage
@@ -161,37 +174,57 @@ impl LsmStorage {
                 if data.is_empty() {
                     continue;
                 }
-                let file_ids = data.trim().split(" ").collect::<Vec<&str>>();
-                if id == 0 {    // mem_table
+                let file_ids = data.trim().split(' ').collect::<Vec<&str>>();
+                if id == 0 {
+                    // mem_table
                     assert_eq!(file_ids.len(), 1);
                     let mem_table_id = file_ids[0].parse::<usize>().unwrap();
                     next_sst_id = mem_table_id;
-                    memtable = LsmStorage::restore_memtable(mem_table_id, path).expect("[LsmStorage::recovery] recover mem_table fail");
+                    memtable = LsmStorage::restore_memtable(mem_table_id, path)
+                        .expect("[LsmStorage::recovery] recover mem_table fail");
                     log_number_records[0].push(mem_table_id);
-
-                } else if id == 1 {     // imm_mem_tables
+                } else if id == 1 {
+                    // imm_mem_tables
                     imm_memtables.reserve(file_ids.len());
                     log_number_records[1].reserve(file_ids.len());
                     for file_id in file_ids.into_iter() {
                         let mem_table_id = file_id.parse::<usize>().unwrap();
-                        imm_memtables.push(LsmStorage::restore_memtable(mem_table_id, path).expect("[LsmStorage::recovery] recover immutable mem_table fail"));
+                        imm_memtables.push(
+                            LsmStorage::restore_memtable(mem_table_id, path)
+                                .expect("[LsmStorage::recovery] recover immutable mem_table fail"),
+                        );
                     }
-
-                } else if id == 2 {     // l0 ss-table
+                } else if id == 2 {
+                    // l0 ss-table
                     l0_sstables.reserve(file_ids.len());
                     for file_id in file_ids.into_iter() {
                         let sst_id = file_id.parse::<usize>().unwrap();
                         let ss_table_path = path.join(file_id.to_owned() + ".sst");
                         // XXX: here file object read all data from ss-table to cache, absolutely need optimization
-                        l0_sstables.push(Arc::new(SsTable::open(sst_id, Some(block_cache.clone()), FileObject::open(&ss_table_path).unwrap()).unwrap()));
+                        l0_sstables.push(Arc::new(
+                            SsTable::open(
+                                sst_id,
+                                Some(block_cache.clone()),
+                                FileObject::open(&ss_table_path).unwrap(),
+                            )
+                            .unwrap(),
+                        ));
                     }
-                } else  {      // other ss-table
+                } else {
+                    // other ss-table
                     let mut level = Vec::new();
                     level.reserve(file_ids.len());
                     for file_id in file_ids.into_iter() {
                         let sst_id = file_id.parse::<usize>().unwrap();
                         let ss_table_path = path.join(sst_id.to_string() + ".sst");
-                        level.push(Arc::new(SsTable::open(sst_id, Some(block_cache.clone()), FileObject::open(&ss_table_path).unwrap()).unwrap()));
+                        level.push(Arc::new(
+                            SsTable::open(
+                                sst_id,
+                                Some(block_cache.clone()),
+                                FileObject::open(&ss_table_path).unwrap(),
+                            )
+                            .unwrap(),
+                        ));
                     }
                     levels.push(level);
                 }
@@ -204,11 +237,17 @@ impl LsmStorage {
         // init the LsmStorageInner
         let log_builder = LogBuilder::new(next_sst_id, path, 128);
         log_number_records[0][0] = next_sst_id;
-        let lsm_storage_inner = Arc::new(LsmStorageInner::create_after_crash(next_sst_id, memtable.clone(), imm_memtables, l0_sstables, levels, log_number_records, block_cache, log_builder));
-        lsm_storage_inner
+        Arc::new(LsmStorageInner::create_after_crash(
+            next_sst_id,
+            memtable.clone(),
+            imm_memtables,
+            l0_sstables,
+            levels,
+            log_number_records,
+            block_cache,
+            log_builder,
+        ))
     }
-
-
 
     pub fn open(path: impl AsRef<Path>) -> Result<Self> {
         // get the lsm storage inner and log builder
@@ -281,8 +320,13 @@ impl LsmStorage {
     /// Put a key-value pair into the storage by writing into the current memtable.
     pub fn put(&self, key: &[u8], value: &[u8]) -> Result<()> {
         let r = self.inner.read();
-        let mut log_builder = r.log_builder.lock().expect("[LsmStorage::put] get log builder fail");
-        log_builder.add_record(key, value).expect("[LsmStorage::put] write log file fail");
+        let mut log_builder = r
+            .log_builder
+            .lock()
+            .expect("[LsmStorage::put] get log builder fail");
+        log_builder
+            .add_record(key, value)
+            .expect("[LsmStorage::put] write log file fail");
         r.memtable.put(key, value);
         Ok(())
     }
@@ -290,8 +334,13 @@ impl LsmStorage {
     /// Remove a key from the storage by writing an empty value.
     pub fn delete(&self, _key: &[u8]) -> Result<()> {
         let r = self.inner.read();
-        let mut log_builder = r.log_builder.lock().expect("[LsmStorage::delete] get log builder fail");
-        log_builder.add_record(_key, &[]).expect("[LsmStorage::delete] write log file fail");
+        let mut log_builder = r
+            .log_builder
+            .lock()
+            .expect("[LsmStorage::delete] get log builder fail");
+        log_builder
+            .add_record(_key, &[])
+            .expect("[LsmStorage::delete] write log file fail");
         r.memtable.put(_key, &[]);
         Ok(())
     }
@@ -306,7 +355,6 @@ impl LsmStorage {
             .lock()
             .expect("[LsmStorage::sync] encounter an error when acquire lock");
 
-
         // Firstly, move the current mutable mem-table to immutable mem-table list
         {
             // NOTE: the operation on write guard is copy-on-write
@@ -317,11 +365,16 @@ impl LsmStorage {
             object.memtable = Arc::new(MemTable::create());
 
             // generate a new log file for the new mem-table
-            assert!(object.log_number_records[0].len() > 0);
+            assert!(!object.log_number_records[0].is_empty());
             object.log_number_records[1].insert(0, object.log_number_records[0][0]);
             {
-                let mut log_builder = object.log_builder.lock().expect("[LsmStorage::sync] get log builder lock fail");
-                log_builder.replace_dest().expect("[LsmStorage::sync] replace being used log file fail");
+                let mut log_builder = object
+                    .log_builder
+                    .lock()
+                    .expect("[LsmStorage::sync] get log builder lock fail");
+                log_builder
+                    .replace_dest()
+                    .expect("[LsmStorage::sync] replace being used log file fail");
                 object.log_number_records[0][0] = log_builder.get_cur_log_file_id();
             }
             *w = Arc::new(object);
@@ -491,21 +544,23 @@ impl LsmStorage {
                 [level_n, level_n_1],
                 next_sst_id.clone(),
                 block_cache.clone(),
+                1024 * 1024 * 256,
                 dir.clone(),
             );
             // do compaction work
             compaction_instance
                 .compact_two_levels()
-                .unwrap_or_else(|_| {
-                    panic!(
-                        "{}",
-                        &format!(
-                            "[LsmStorage::compaction] compaction level {} and level {} fail",
-                            level,
-                            level + 1
-                        )
-                    )
-                });
+                // .unwrap_or_else(|_| {
+                //     panic!(
+                //         "{}",
+                //         &format!(
+                //             "[LsmStorage::compaction] compaction level {} and level {} fail",
+                //             level,
+                //             level + 1
+                //         )
+                //     )
+                // });
+                .unwrap();
 
             // install the compaction result
             let new_levels = compaction_instance.generate_output();
@@ -534,7 +589,7 @@ impl LsmStorage {
             }
 
             // judge whether need to stop compaction
-            if compaction_instance.is_finished() {
+            if !compaction_instance.need_continue() {
                 break;
             }
 
@@ -543,12 +598,14 @@ impl LsmStorage {
         Ok(())
     }
 
-
     /// Sync the log builder, ensure all log data is written to disk
     // NOTE: this function is only used for test
     pub fn sync_log_builder(&self) -> Result<()> {
         let r = self.inner.read();
-        let mut log_builder = r.log_builder.lock().expect("[LsmStorage::sync_log_builder] get log builder lock fail");
+        let mut log_builder = r
+            .log_builder
+            .lock()
+            .expect("[LsmStorage::sync_log_builder] get log builder lock fail");
         log_builder.sync_cur_log_file()
     }
 }

@@ -9,7 +9,7 @@ use std::io::{Cursor, Read, Seek, SeekFrom, Write};
 use std::path::Path;
 use std::sync::Arc;
 
-use anyhow::{Result, Error};
+use anyhow::{Error, Result};
 pub use builder::SsTableBuilder;
 use bytes::{Buf, BufMut, Bytes};
 pub use iterator::SsTableIterator;

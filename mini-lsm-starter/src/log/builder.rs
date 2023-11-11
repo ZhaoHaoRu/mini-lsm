@@ -1,17 +1,17 @@
 use std::fs;
 use std::fs::File;
-use std::io::{Write};
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use crate::log::LogBlock;
 use anyhow::{Error, Result};
 use log::debug;
 use tempfile::NamedTempFile;
-use crate::log::LogBlock;
 
 /// A file abstraction for sequential writing
 pub struct WritableFile {
     file: File,
-    is_active: bool
+    is_active: bool,
 }
 
 impl WritableFile {
@@ -19,7 +19,7 @@ impl WritableFile {
     pub fn default() -> Self {
         Self {
             file: NamedTempFile::new().unwrap().into_file(),
-            is_active: false
+            is_active: false,
         }
     }
 
@@ -33,18 +33,18 @@ impl WritableFile {
         let file = File::create(path).expect("[WritableFile::new] create file fail");
         Self {
             file,
-            is_active: true
+            is_active: true,
         }
     }
 
     pub fn append(&mut self, data: &[u8]) -> Result<usize> {
         if !self.is_active {
-            return Err(Error::msg("[WritableFile::append] the file is already close"));
+            return Err(Error::msg(
+                "[WritableFile::append] the file is already close",
+            ));
         }
         match self.file.write(data) {
-            Ok(size) => {
-                Ok(size)
-            }
+            Ok(size) => Ok(size),
             Err(err) => {
                 self.is_active = false;
                 Err(Error::from(err))
@@ -53,9 +53,12 @@ impl WritableFile {
     }
 
     /// Flush this output stream, ensuring that all intermediately buffered contents reach their destination
+    #[allow(dead_code)]
     pub fn flush(&mut self) -> Result<()> {
         if !self.is_active {
-            return Err(Error::msg("[WritableFile::flush] the file is already close"));
+            return Err(Error::msg(
+                "[WritableFile::flush] the file is already close",
+            ));
         }
         match self.file.flush() {
             Ok(()) => Ok(()),
@@ -71,7 +74,9 @@ impl WritableFile {
         if !self.is_active {
             return Err(Error::msg("[WritableFile::sync] the file is already close"));
         }
-        self.file.sync_all().expect("[WritableFile::sync] sync all data fail");
+        self.file
+            .sync_all()
+            .expect("[WritableFile::sync] sync all data fail");
         Ok(())
     }
 }
@@ -90,7 +95,10 @@ impl LogBuilder {
     // NOTE: make public for test
     pub fn sync_cur_log_file(&mut self) -> Result<()> {
         // replace current log block with a new log block
-        let mut old_block = std::mem::replace(&mut self.cur_log_block, LogBlock::new(self.log_block_max_size));
+        let mut old_block = std::mem::replace(
+            &mut self.cur_log_block,
+            LogBlock::new(self.log_block_max_size),
+        );
         // add the log block to file and flush
         self.dest_file.append(&old_block.encode())?;
         self.dest_file.sync()
@@ -109,7 +117,7 @@ impl LogBuilder {
             dest_file: WritableFile::default(),
             dir_path: path.to_path_buf(),
             cur_log_block: LogBlock::new(log_block_max_size),
-            log_block_max_size
+            log_block_max_size,
         };
         let file_path = instance.generate_file_path();
         instance.dest_file = WritableFile::new(&file_path);
@@ -131,7 +139,7 @@ impl LogBuilder {
         match self.cur_log_block.add(key, value) {
             Ok(is_full) => {
                 if is_full {
-                   self.sync_cur_log_file()?;
+                    self.sync_cur_log_file()?;
                 }
             }
             Err(err) => {
@@ -152,15 +160,16 @@ impl LogBuilder {
         if !log_file_path.exists() {
             debug!("[LogBuilder::remove_stale_log_file] the log file not exist");
         }
-        fs::remove_file(log_file_path).expect("[LogBuilder::remove_stale_log_file] remove file fail");
+        fs::remove_file(log_file_path)
+            .expect("[LogBuilder::remove_stale_log_file] remove file fail");
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use tempfile::tempdir;
     use crate::log::builder::WritableFile;
     use crate::tests::utils;
+    use tempfile::tempdir;
 
     #[test]
     fn test_writable_file() {

@@ -1,5 +1,5 @@
-use std::env;
 use std::ops::Bound;
+use std::path::Path;
 
 use bytes::Bytes;
 use log::debug;
@@ -36,8 +36,8 @@ fn check_iter_result(iter: impl StorageIterator, expected: Vec<(Bytes, Bytes)>) 
     assert!(!iter.is_valid());
 }
 
-fn wal_log_test_setup() {
-    let log_dir_path = env::current_dir().unwrap().join("test_data");
+fn wal_log_test_setup(dir: &Path) {
+    let log_dir_path = dir.join("test_data");
     if log_dir_path.exists() {
         let entries = std::fs::read_dir(&log_dir_path).unwrap();
         for entry in entries {
@@ -238,7 +238,6 @@ fn test_storage_scan_after_compaction() {
             .collect::<Vec<_>>(),
     );
 
-
     // check scan after update and delete
     for i in 0..2 {
         for j in 1..=1000 {
@@ -257,12 +256,9 @@ fn test_storage_scan_after_compaction() {
         }
         storage.sync().unwrap();
     }
-
     storage
         .compaction(0)
         .expect("[test_storage_scan_after_compaction] compaction fail");
-
-
     check_iter_result(
         storage
             .scan(
@@ -280,13 +276,13 @@ fn test_storage_scan_after_compaction() {
     );
 }
 
-
 #[test]
 fn test_wal_log_with_mem_table() {
     use crate::lsm_storage::LsmStorage;
 
-    let log_dir_path = env::current_dir().unwrap().join("test_data");
-    wal_log_test_setup();
+    // let log_dir_path = env::current_dir().unwrap().join("test_data");
+    let log_dir_path = tempdir().unwrap().into_path();
+    wal_log_test_setup(&log_dir_path);
 
     // test log write
     {
@@ -303,7 +299,6 @@ fn test_wal_log_with_mem_table() {
         }
         storage.sync_log_builder().unwrap();
     }
-
 
     // test log recovery
     {
@@ -326,8 +321,9 @@ fn test_wal_log_with_mem_table() {
 fn test_wal_log_with_mem_table_and_sst() {
     use crate::lsm_storage::LsmStorage;
 
-    let log_dir_path = env::current_dir().unwrap().join("test_data");
-    wal_log_test_setup();
+    // let log_dir_path = env::current_dir().unwrap().join("test_data");
+    let log_dir_path = tempdir().unwrap().into_path();
+    wal_log_test_setup(&log_dir_path);
 
     // test log write
     {
@@ -345,7 +341,9 @@ fn test_wal_log_with_mem_table_and_sst() {
                 storage.sync().unwrap();
             }
         }
-        storage.compaction(0).expect("[test_wal_log_with_mem_table_and_sst] compaction fail");
+        storage
+            .compaction(0)
+            .expect("[test_wal_log_with_mem_table_and_sst] compaction fail");
         storage.sync_log_builder().unwrap();
     }
 
@@ -365,4 +363,3 @@ fn test_wal_log_with_mem_table_and_sst() {
         );
     }
 }
-

@@ -45,12 +45,13 @@ impl Compaction {
         input: [Vec<Arc<SsTable>>; 2],
         sst_id: Arc<Mutex<usize>>,
         block_cache: Option<Arc<BlockCache>>,
+        max_file_size: usize,
         dir: PathBuf,
     ) -> Self {
         Compaction {
             level,
             input_ss_tables: input,
-            max_file_size: 0,
+            max_file_size,
             left_key_bound: vec![],
             right_key_bound: vec![],
             upper_left_bound: 0,
@@ -65,9 +66,9 @@ impl Compaction {
 
     fn level_needs_compaction(level: usize, level_size: usize) -> bool {
         if level == 0 {
-            level_size >= L0_SIZE
+            level_size > L0_SIZE
         } else {
-            level_size >= AMPLIFICATION_FACTOR.pow(level as u32)
+            level_size > AMPLIFICATION_FACTOR.pow(level as u32)
         }
     }
 
@@ -180,16 +181,14 @@ impl Compaction {
         let mut right = -1;
         let mut first = true;
         for (id, table) in self.input_ss_tables[1].iter().enumerate() {
-            if table.min_key() < self.left_key_bound {
-                left += 1;
-            } else if first && table.min_key() >= self.left_key_bound {
+            if first && table.min_key() >= self.left_key_bound {
                 left = max(id as i32 - 1, 0);
                 first = false;
                 if self.right_key_bound.is_empty() {
                     right = self.input_ss_tables[1].len() as i32;
                     break;
                 }
-            } else if table.min_key() > self.right_key_bound {
+            } else if !self.right_key_bound.is_empty() && table.min_key() > self.right_key_bound {
                 right = id as i32;
                 break;
             }
@@ -227,7 +226,6 @@ impl Compaction {
         let mut deleted_elements = HashSet::new();
         let mut duplicated_elements = HashSet::new();
         let mut ss_table_builders = vec![];
-        // XXX: for test. change from 4096 to 128
         let mut current_ss_table_builder = SsTableBuilder::new(BLOCK_SIZE);
         let mut result = vec![];
 
@@ -241,11 +239,13 @@ impl Compaction {
 
             if merge_iterator.value().is_empty() {
                 deleted_elements.insert(key);
+                merge_iterator.next().unwrap();
                 continue;
             }
             if deleted_elements.contains(merge_iterator.key())
                 || duplicated_elements.contains(merge_iterator.key())
             {
+                merge_iterator.next().unwrap();
                 continue;
             }
 
@@ -366,7 +366,7 @@ impl Compaction {
     }
 
     /// judge whether the leveled compaction is stop after merging these two levels
-    pub fn is_finished(&self) -> bool {
+    pub fn need_continue(&self) -> bool {
         Compaction::level_needs_compaction(self.level + 1, self.input_ss_tables[1].len())
     }
 

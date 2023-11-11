@@ -113,12 +113,10 @@ impl SsTableIterator {
             .expect("[SsTableIterator::seek_to_key] read block fail");
 
         // use filter block to check
-        if !self.table.filters[block_index].is_exist(key) {
-            // the target is to find the particular key, and the key is not exist
-            if is_precise {
-                self.block_iterator = BlockIterator::new(Arc::new(Block::new()));
-                return Ok(());
-            }
+        // the target is to find the particular key, and the key is not exist
+        if is_precise && !self.table.filters[block_index].is_exist(key) {
+            self.block_iterator = BlockIterator::new(Arc::new(Block::new()));
+            return Ok(());
         }
 
         self.block_iterator = BlockIterator::create_and_seek_to_key(candidate_block, key);

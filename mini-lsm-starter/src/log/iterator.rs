@@ -1,13 +1,13 @@
 #![allow(unused_variables)] // TODO(you): remove this lint after implementing this mod
 #![allow(dead_code)] // TODO(you): remove this lint after implementing this mod
 
+use super::{LogBlock, LogRecord};
+use crate::iterators::StorageIterator;
 use anyhow::Result;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::sync::Arc;
-use crate::iterators::StorageIterator;
-use super::{LogBlock, LogRecord};
 
 /// An iterator over the log file
 pub struct LogIterator {
@@ -20,19 +20,17 @@ impl LogIterator {
         // open the file and write the content
         let mut file = File::open(path)?;
         let mut buffer = Vec::new();
-        file.read_to_end(&mut buffer).expect("[LogIterator::create] read file fail");
+        file.read_to_end(&mut buffer)
+            .expect("[LogIterator::create] read file fail");
         let logs = LogBlock::decode(&buffer[..]);
-        Ok(Self{
-            logs,
-            idx: 0
-        })
+        Ok(Self { logs, idx: 0 })
     }
 }
 
 impl StorageIterator for LogIterator {
     fn value(&self) -> &[u8] {
         if self.idx >= self.logs.len() {
-            return  &[];
+            return &[];
         }
 
         &self.logs[self.idx].value
@@ -54,4 +52,3 @@ impl StorageIterator for LogIterator {
         Ok(())
     }
 }
-

@@ -7,11 +7,12 @@
     <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="update day4">
+    <list default="true" id="6135fd36-0853-4aaf-b4ca-ab7812ff64d2" name="Changes" comment="day7: finish basic log logic">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/log.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/log/builder.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log/builder.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/log/iterator.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/log/iterator.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/table.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" beforeDir="false" afterPath="$PROJECT_DIR$/mini-lsm-starter/src/lsm_storage.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,73 +46,75 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Cargo.Test block::filter::tests::test_filter.executor": "Run",
-    "Cargo.Test block::tests::test_block_build_all.executor": "Run",
-    "Cargo.Test block::tests::test_block_build_full.executor": "Run",
-    "Cargo.Test block::tests::test_block_build_single_key.executor": "Run",
-    "Cargo.Test block::tests::test_block_decode.executor": "Run",
-    "Cargo.Test block::tests::test_block_encode.executor": "Run",
-    "Cargo.Test block::tests::test_block_iterator.executor": "Run",
-    "Cargo.Test block::tests::test_block_seek_key.executor": "Run",
-    "Cargo.Test compaction::tests.executor": "Run",
-    "Cargo.Test compaction::tests::compile_test.executor": "Run",
-    "Cargo.Test compaction::tests::test_compile.executor": "Run",
-    "Cargo.Test compaction::tests::test_get_overlapped_range.executor": "Run",
-    "Cargo.Test compaction::tests::test_get_required_key_range.executor": "Run",
-    "Cargo.Test compaction::tests::test_merge.executor": "Run",
-    "Cargo.Test compaction::tests::test_merge_micro.executor": "Run",
-    "Cargo.Test compaction::tests::test_merge_more_complicated.executor": "Run",
-    "Cargo.Test compaction::tests::test_pick_compaction.executor": "Run",
-    "Cargo.Test compaction::tests::test_uninstall_and_install_file.executor": "Run",
-    "Cargo.Test compaction_tests.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_1.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_2.executor": "Run",
-    "Cargo.Test iterators::tests::merge_iterator_test::test_merge_empty.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor": "Run",
-    "Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor": "Run",
-    "Cargo.Test log::builder::tests::test_log_builder.executor": "Run",
-    "Cargo.Test log::builder::tests::test_writable_file.executor": "Run",
-    "Cargo.Test log::tests::test_log_block.executor": "Run",
-    "Cargo.Test log::tests::test_log_record.executor": "Run",
-    "Cargo.Test table::tests.executor": "Run",
-    "Cargo.Test table::tests::test_sst_build_all.executor": "Run",
-    "Cargo.Test table::tests::test_sst_build_single_key.executor": "Run",
-    "Cargo.Test table::tests::test_sst_build_two_blocks.executor": "Run",
-    "Cargo.Test table::tests::test_sst_decode.executor": "Debug",
-    "Cargo.Test table::tests::test_sst_iterator.executor": "Run",
-    "Cargo.Test table::tests::test_sst_seek_key.executor": "Run",
-    "Cargo.Test tests::compaction_compile_test.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_get.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_after_compaction.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_2.executor": "Run",
-    "Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync.executor": "Run",
-    "Cargo.Test two_merge_iterator_test.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "develop",
-    "last_opened_file_path": "/Users/zhaohaoru/rust_project/mini-lsm",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "org.rust.cargo.project.model.PROJECT_DISCOVERY": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs": "true",
-    "org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs": "true",
-    "settings.editor.selected.configurable": "language.rust.cargo.check",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Cargo.Test block::filter::tests::test_filter.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_build_all.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_build_full.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_build_single_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_decode.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_encode.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_iterator.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test block::tests::test_block_seek_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test builder::tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::compile_test.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_compile.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_get_overlapped_range.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_get_required_key_range.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_merge.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_merge_micro.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_merge_more_complicated.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_pick_compaction.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction::tests::test_uninstall_and_install_file.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test compaction_tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::merge_iterator_test::test_merge_empty.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_3.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_4.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test iterators::tests::two_merge_iterator_test::test_merge_5.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test log::builder::tests::test_log_builder.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test log::builder::tests::test_writable_file.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test log::tests::test_log_block.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test log::tests::test_log_reader_and_log_iterator.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test log::tests::test_log_record.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_build_all.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_build_single_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_build_two_blocks.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_decode.executor&quot;: &quot;Debug&quot;,
+    &quot;Cargo.Test table::tests::test_sst_iterator.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test table::tests::test_sst_seek_key.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::compaction_compile_test.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_get.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_get_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_after_compaction.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_1.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_1_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_2.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test tests::day4_tests::test_storage_scan_memtable_2_after_sync.executor&quot;: &quot;Run&quot;,
+    &quot;Cargo.Test two_merge_iterator_test.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;develop&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/zhaohaoru/rust_project/mini-lsm&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;org.rust.cargo.project.model.PROJECT_DISCOVERY&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm-starter/src/block/builder.rs&quot;: &quot;true&quot;,
+    &quot;org.rust.disableDetachedFileInspection/Users/zhaohaoru/rust_project/mini-lsm/mini-lsm/src/iterators/merge_iterator.rs&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;language.rust.cargo.check&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/mini-lsm-starter/src/block" />
@@ -120,9 +123,26 @@
       <recent name="$PROJECT_DIR$/mini-lsm-starter/" />
     </key>
   </component>
-  <component name="RunManager" selected="Cargo.Test log::builder::tests::test_log_builder">
+  <component name="RunManager" selected="Cargo.Test tests::day4_tests::test_storage_get">
     <configuration name="Run" type="CargoCommandRunConfiguration" factoryName="Cargo Command" nameIsGenerated="true">
       <option name="command" value="run" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="Test builder::tests" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib log::builder::tests" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -172,42 +192,8 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
-    <configuration name="Test log::tests::test_log_block" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib log::tests::test_log_block -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test log::tests::test_log_record" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib log::tests::test_log_record -- --exact" />
-      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
-      <option name="emulateTerminal" value="true" />
-      <option name="channel" value="DEFAULT" />
-      <option name="requiredFeatures" value="true" />
-      <option name="allFeatures" value="false" />
-      <option name="withSudo" value="false" />
-      <option name="buildTarget" value="REMOTE" />
-      <option name="backtrace" value="SHORT" />
-      <envs />
-      <option name="isRedirectInput" value="false" />
-      <option name="redirectInputPath" value="" />
-      <method v="2">
-        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="Test table::tests::test_sst_seek_key" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
-      <option name="command" value="test --package mini-lsm-starter --lib table::tests::test_sst_seek_key -- --exact" />
+    <configuration name="Test log::tests::test_log_reader_and_log_iterator" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib log::tests::test_log_reader_and_log_iterator -- --exact" />
       <option name="workingDirectory" value="file://$PROJECT_DIR$" />
       <option name="emulateTerminal" value="true" />
       <option name="channel" value="DEFAULT" />
@@ -240,22 +226,39 @@
         <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
       </method>
     </configuration>
+    <configuration name="Test tests::day4_tests::test_storage_get" type="CargoCommandRunConfiguration" factoryName="Cargo Command" temporary="true">
+      <option name="command" value="test --package mini-lsm-starter --lib tests::day4_tests::test_storage_get -- --exact" />
+      <option name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <option name="emulateTerminal" value="true" />
+      <option name="channel" value="DEFAULT" />
+      <option name="requiredFeatures" value="true" />
+      <option name="allFeatures" value="false" />
+      <option name="withSudo" value="false" />
+      <option name="buildTarget" value="REMOTE" />
+      <option name="backtrace" value="SHORT" />
+      <envs />
+      <option name="isRedirectInput" value="false" />
+      <option name="redirectInputPath" value="" />
+      <method v="2">
+        <option name="CARGO.BUILD_TASK_PROVIDER" enabled="true" />
+      </method>
+    </configuration>
     <list>
       <item itemvalue="Cargo.Run" />
       <item itemvalue="Cargo.Test tests::compaction_compile_test" />
+      <item itemvalue="Cargo.Test log::tests::test_log_reader_and_log_iterator" />
+      <item itemvalue="Cargo.Test tests::day4_tests::test_storage_get" />
+      <item itemvalue="Cargo.Test builder::tests" />
       <item itemvalue="Cargo.Test log::builder::tests::test_log_builder" />
       <item itemvalue="Cargo.Test log::builder::tests::test_writable_file" />
-      <item itemvalue="Cargo.Test log::tests::test_log_block" />
-      <item itemvalue="Cargo.Test log::tests::test_log_record" />
-      <item itemvalue="Cargo.Test table::tests::test_sst_seek_key" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Cargo.Test tests::day4_tests::test_storage_get" />
+        <item itemvalue="Cargo.Test log::tests::test_log_reader_and_log_iterator" />
+        <item itemvalue="Cargo.Test builder::tests" />
         <item itemvalue="Cargo.Test log::builder::tests::test_log_builder" />
         <item itemvalue="Cargo.Test log::builder::tests::test_writable_file" />
-        <item itemvalue="Cargo.Test log::tests::test_log_block" />
-        <item itemvalue="Cargo.Test log::tests::test_log_record" />
-        <item itemvalue="Cargo.Test table::tests::test_sst_seek_key" />
       </list>
     </recent_temporary>
   </component>
@@ -284,7 +287,9 @@
       <workItem from="1698111126262" duration="2831000" />
       <workItem from="1698113976624" duration="7378000" />
       <workItem from="1698126707470" duration="42184000" />
-      <workItem from="1698301921094" duration="32296000" />
+      <workItem from="1698301921094" duration="34160000" />
+      <workItem from="1698849061771" duration="28815000" />
+      <workItem from="1699248900436" duration="599000" />
     </task>
     <task id="LOCAL-00001" summary="finish day2 part1">
       <option name="closed" value="true" />
@@ -302,7 +307,15 @@
       <option name="project" value="LOCAL" />
       <updated>1697521904020</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="day7: finish basic log logic">
+      <option name="closed" value="true" />
+      <created>1698897048513</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1698897048513</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -322,7 +335,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="finish day2 part1" />
     <MESSAGE value="finish day3 part1-3" />
-    <option name="LAST_COMMIT_MESSAGE" value="finish day3 part1-3" />
+    <MESSAGE value="day7: finish basic log logic" />
+    <option name="LAST_COMMIT_MESSAGE" value="day7: finish basic log logic" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
