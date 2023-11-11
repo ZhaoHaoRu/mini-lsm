@@ -90,27 +90,11 @@ We have reference solution up to day 4 and tutorial up to day 4 for now.
 - 在生成SSTable的时候，会为每个data block生成一个filter block，filter block使用了`cargo.io`中[现成的crate](https://docs.rs/bloomfilter/latest/bloomfilter/struct.Bloom.html)。
   - 每个filter block的大小为一个data block大小的 1/32
 
-### WAL log
+## WAL log
 
-#### Log format
+## Log format
 
-- 这里参考了leveldb log的格式，log文件包含一系列32KB大小的block，只有最后一个block可能是一个不完全的block
-
-- 每个block由一系列的record构成，record的格式如下：
-```
---------------------------------------------------------
-｜ record length (u16) | record type (u8) | record data |
---------------------------------------------------------
-```
-- 如果key－value对过大，无法存放在单个block中，可能存放在多个不同的block中, 所以这里需要`record type`字段：
-
-```
-FULL == 1: 记录完全在一个block中
-FIRST == 2: 当前block容纳不下所有的内容，记录的第一片在本block中
-MIDDLE == 3: 记录的内容的起始位置不在本block，结束未知也不在本block
-LAST == 4: 记录的内容起始位置不在本block，但 结束位置在本block
-```
-- record中记录的是key-value对的内容，key-value对的格式如下：
+- 这里参考了leveldb log的格式，log文件由一系列record组成。record中记录的是key-value对的内容，key-value对的格式如下：
   - 如果`value length` = 0, 说明是delete
 ```
 -------------------------------------------------------
@@ -118,10 +102,24 @@ LAST == 4: 记录的内容起始位置不在本block，但 结束位置在本blo
 -------------------------------------------------------
 ```
 
+- block是log在内存中缓存的单位，当内存中缓存的log长度大于128B时，会将log写入到磁盘中
+
 - 每个memtable / immutable memtable对应一个log file，log file的名字编号越大，对应的log越新
 
-#### manifest
+## manifest
+- manifest文件的文件名为`manifest`
 - log_number_：最小的有效 log number。小于 log_numbers_ 的 log 文件都可以删除。
 - next_file_number_：下一个文件的编号 (file_number_)。
+- 所有sstable的sst_file_id,每个level独占一行
 - 这里要求memtable的log number和其对应的sst文件的编号相同
 - 在每次sync和compaction结束后，都需要更新manifest文件
+
+## Recovery
+- 在每次启动时，都会读取manifest文件，根据manifest文件中记录的log number和sst文件的编号:
+- 读取log文件，将其中的key-value对写入memtable中
+- 读取sst文件，恢复sstable的结构
+
+## Persistent
+- 在每次插入和删除KV之前，都会将其写入log文件
+- 在每次sync和compaction结束后，重新持久化目前的结构，将manifest文件写入磁盘
+- 在每次sync和compaction结束后，会删除删除过期的log文件
